@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Thêm đuôi ?v=2 để điện thoại luôn tải file CSS mới nhất -->
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <!-- Màn hình cấu hình nhân vật ban đầu -->
@@ -34,28 +35,28 @@
         </div>
     </div>
 
-    <!-- Thanh UI trạng thái trên cùng: Gọn gàng, cân đối cho Mobile -->
+    <!-- Thanh UI trạng thái: Gọn gàng, cân đối, không bao giờ bị đè chữ -->
     <div id="ui-container" class="hidden">
         <div id="status-bar">
-            <div class="status-col">
-                <span class="badge">Bài phốt: <b id="paper-count">0</b>/10</span>
-                <span class="badge shift-badge">Biến đổi: <b id="shift-timer-display">18s</b></span>
+            <div class="status-top-row">
+                <span class="info-badge">Bài phốt: <b id="paper-count">0</b>/10</span>
+                <span class="info-badge timer-badge">Đổi map: <b id="shift-timer-display">18s</b></span>
             </div>
-            <div class="status-msg" id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy ẩn!</div>
+            <div class="status-message" id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy ẩn!</div>
         </div>
     </div>
 
-    <!-- Màn hình Canvas -->
+    <!-- Màn hình vẽ game -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển cho Mobile -->
+    <!-- Cần điều khiển Joystick cho Mobile -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
     </div>
 
-    <!-- Màn hình kết thúc game -->
+    <!-- Màn hình thông báo kết thúc -->
     <div id="game-modal" class="hidden">
         <div class="modal-content">
             <h1 id="modal-title">BẠN ĐÃ THUA!</h1>
@@ -64,6 +65,7 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <!-- Thêm đuôi ?v=2 để điện thoại luôn tải file JS mới nhất -->
+    <script src="game.js?v=2"></script>
 </body>
 </html>
