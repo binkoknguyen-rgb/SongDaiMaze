@@ -1,6 +1,6 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
- * File: game.js (Phiên bản chống sập màn hình đen & Đồ họa tương phản cao)
+ * File: game.js (Bản sửa dứt điểm lỗi kẹt giấy & Bảo vệ đường đi tuyệt đối)
  */
 
 // ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
@@ -198,7 +198,7 @@ function canReach(startC, startR, targetC, targetR, grid) {
         for (let [dc, dr] of dirs) {
             let nc = currC + dc;
             let nr = currR + dr;
-            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && grid[nr][nc] === 0 && !visited[nr][nc]) {
+            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && grid[nr] && grid[nr][nc] === 0 && !visited[nr][nc]) {
                 visited[nr][nc] = true;
                 queue.push([nc, nr]);
             }
@@ -207,6 +207,12 @@ function canReach(startC, startR, targetC, targetR, grid) {
     return false;
 }
 
+// Kiểm tra xem ô tọa độ (col, row) có đang chứa bài phốt hay không
+function isPaperOnTile(col, row) {
+    return papers.some(p => Math.floor(p.x / TILE_SIZE) === col && Math.floor(p.y / TILE_SIZE) === row);
+}
+
+// Chuyển dịch mê cung thông minh: Bảo vệ bài phốt không bao giờ bị đè hay kẹt
 function smartMazeShift() {
     screenShake = 18;
     let pCol = Math.floor(player.x / TILE_SIZE);
@@ -223,10 +229,35 @@ function smartMazeShift() {
         let newVal = currentVal === 0 ? 1 : 0;
 
         if (newVal === 1) {
-            if ((door.c === pCol && door.r === pRow) || (door.c === mCol && door.r === mRow)) continue;
+            // KHÔNG ĐƯỢC ĐÓNG TƯỜNG NẾU:
+            // 1. Trúng vị trí người chơi hoặc quái vật
+            // 2. Trúng vị trí của bất kỳ bài phốt nào
+            if ((door.c === pCol && door.r === pRow) || 
+                (door.c === mCol && door.r === mRow) || 
+                isPaperOnTile(door.c, door.r)) {
+                continue;
+            }
+
+            // Thử đóng tường
             maze[door.r][door.c] = 1;
-            if (!canReach(pCol, pRow, mCol, mRow, maze)) {
-                maze[door.r][door.c] = 0;
+
+            // Kiểm tra đường đi giữa người chơi và quái vật
+            let isPathSafe = canReach(pCol, pRow, mCol, mRow, maze);
+
+            // KIỂM TRA ĐƯỜNG ĐI ĐẾN TOÀN BỘ CÁC BÀI PHỐT CÒN LẠI
+            if (isPathSafe) {
+                for (let p of papers) {
+                    let paperCol = Math.floor(p.x / TILE_SIZE);
+                    let paperRow = Math.floor(p.y / TILE_SIZE);
+                    if (!canReach(pCol, pRow, paperCol, paperRow, maze)) {
+                        isPathSafe = false; // Làm bít đường đến bài phốt -> Hủy bỏ!
+                        break;
+                    }
+                }
+            }
+
+            if (!isPathSafe) {
+                maze[door.r][door.c] = 0; // Hủy đóng tường
                 continue;
             }
         } else {
@@ -234,6 +265,17 @@ function smartMazeShift() {
         }
         changedCount++;
     }
+
+    // PHAO CỨU SINH: Đảm bảo giải cứu nếu có bài phốt nào vô tình kẹt
+    for (let p of papers) {
+        let prCol = Math.floor(p.x / TILE_SIZE);
+        let prRow = Math.floor(p.y / TILE_SIZE);
+        if (maze[prRow] && maze[prRow][prCol] === 1) {
+            // Tự động đục thông tường tại ô chứa giấy để bạn luôn nhặt được
+            maze[prRow][prCol] = 0;
+        }
+    }
+
     monster.currentPath = [];
 }
 
@@ -298,7 +340,7 @@ let player = {
     color: '#00a8ff',
     x: 96,
     y: 96,
-    radius: 16,
+    radius: 15,
     baseSpeed: 5.6,
     speed: 5.6,
     angle: 0,
@@ -538,7 +580,7 @@ function triggerMonsterSpeak(text, duration = 160) {
     monster.speechTimer = duration;
 }
 
-// ======================= 11. KHỞI TẠO GAME HOÀN TOÀN BẢO VỆ =======================
+// ======================= 11. KHỞI TẠO GAME =======================
 function initGame() {
     resizeCanvas();
     maze = generateMaze(COLS, ROWS);
@@ -928,7 +970,7 @@ function update() {
     }
 }
 
-// ======================= 13. VẼ ĐỒ HỌA (TƯƠNG PHẢN CAO, BẢO ĐẢM KHÔNG ĐEN) =======================
+// ======================= 13. VẼ ĐỒ HỌA HOÀN TOÀN RÕ NÉT =======================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!isPlaying) return;
@@ -958,14 +1000,12 @@ function draw() {
             let x = c * TILE_SIZE;
             let y = r * TILE_SIZE;
             if (maze[r] && maze[r][c] === 1) {
-                // Tường màu xanh đậm có viền xanh dương sáng nổi bật
                 ctx.fillStyle = '#1e293b';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
                 ctx.strokeStyle = '#0284c7';
                 ctx.lineWidth = 1.5;
                 ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
             } else {
-                // Sàn đường đi sáng dịu, có kẻ ô nhẹ
                 ctx.fillStyle = '#0b1329';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
                 ctx.strokeStyle = '#111e38';
@@ -1025,12 +1065,12 @@ function draw() {
         ctx.restore();
     }
 
-    // --- D. VẼ 10 BÀI PHỐT ---
+    // --- D. VẼ 10 BÀI PHỐT (LUÔN PHÁT SÁNG NỔI BẬT) ---
     let floatVal = Math.sin(Date.now() / 180) * 4;
     for (let p of papers) {
-        ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
         ctx.beginPath();
-        ctx.arc(p.x, p.y + floatVal, 18, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y + floatVal, 20, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
@@ -1113,7 +1153,7 @@ function draw() {
         ctx.restore();
     }
 
-    // Bong bóng lời thoại (Dùng hình chữ nhật an toàn 100%, không dùng roundRect)
+    // Bong bóng lời thoại
     if (monster.speechTimer > 0 && monster.speechText) {
         ctx.save();
         ctx.font = 'bold 13px -apple-system, sans-serif';
@@ -1173,9 +1213,9 @@ function draw() {
     ctx.fill();
 
     ctx.restore();
-    ctx.restore(); // Phục hồi góc Camera
+    ctx.restore();
 
-    // --- H. ÁNH SÁNG ĐÈN PIN RỘNG MỞ (KHÔNG BAO GIỜ BỊ ĐEN HÌNH) ---
+    // --- H. ÁNH SÁNG ĐÈN PIN RỘNG MỞ ---
     let lightGrad = ctx.createRadialGradient(
         canvas.width / 2, canvas.height / 2, 220,
         canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.9
@@ -1247,7 +1287,6 @@ function restartGame() {
     initGame();
 }
 
-// VÒNG LẶP AN TOÀN TUYỆT ĐỐI (KHÔNG BAO GIỜ BỊ SẬP DỪNG LẠI)
 function gameLoop() {
     try {
         update();
@@ -1264,5 +1303,4 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Khởi động vòng lặp game ngay từ đầu
 requestAnimationFrame(gameLoop);
