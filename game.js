@@ -1,7 +1,6 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
- * File: game.js
- * Bản sửa lỗi giao diện Mobile: Xóa hoàn toàn chữ Canvas đè lên thanh thông tin.
+ * File: game.js (Bản sửa dứt điểm lỗi màn hình đen & Tối ưu hiển thị ánh sáng)
  */
 
 // ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
@@ -273,7 +272,7 @@ function findPathBFS(startC, startR, targetC, targetR) {
         for (let [dc, dr] of dirs) {
             let nc = currC + dc;
             let nr = currR + dr;
-            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && grid[nr][nc] === 0 && !visited[nr][nc]) {
+            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0 && !visited[nr][nc]) {
                 visited[nr][nc] = true;
                 parent[`${nc},${nr}`] = [currC, currR];
                 queue.push([nc, nr]);
@@ -367,29 +366,34 @@ const joystickStick = document.getElementById('joystick-stick');
 let touchId = null;
 let joystickCenter = { x: 0, y: 0 };
 
-joystickZone.addEventListener('touchstart', (e) => {
-    const touch = e.changedTouches[0];
-    touchId = touch.identifier;
-    const rect = joystickBase.getBoundingClientRect();
-    joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    handleJoystick(touch.clientX, touch.clientY);
-});
-joystickZone.addEventListener('touchmove', (e) => {
-    for (let t of e.changedTouches) {
-        if (t.identifier === touchId) {
-            handleJoystick(t.clientX, t.clientY);
-            break;
+if (joystickZone) {
+    joystickZone.addEventListener('touchstart', (e) => {
+        const touch = e.changedTouches[0];
+        touchId = touch.identifier;
+        const rect = joystickBase.getBoundingClientRect();
+        joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        handleJoystick(touch.clientX, touch.clientY);
+    });
+
+    joystickZone.addEventListener('touchmove', (e) => {
+        for (let t of e.changedTouches) {
+            if (t.identifier === touchId) {
+                handleJoystick(t.clientX, t.clientY);
+                break;
+            }
         }
+    });
+
+    function resetJoystick() {
+        touchId = null;
+        input.dx = 0;
+        input.dy = 0;
+        if (joystickStick) joystickStick.style.transform = `translate(-50%, -50%)`;
     }
-});
-function resetJoystick() {
-    touchId = null;
-    input.dx = 0;
-    input.dy = 0;
-    joystickStick.style.transform = `translate(-50%, -50%)`;
+
+    joystickZone.addEventListener('touchend', resetJoystick);
+    joystickZone.addEventListener('touchcancel', resetJoystick);
 }
-joystickZone.addEventListener('touchend', resetJoystick);
-joystickZone.addEventListener('touchcancel', resetJoystick);
 
 function handleJoystick(cx, cy) {
     const maxR = 40;
@@ -400,7 +404,9 @@ function handleJoystick(cx, cy) {
         dx = (dx / dist) * maxR;
         dy = (dy / dist) * maxR;
     }
-    joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    if (joystickStick) {
+        joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    }
     input.dx = dx / maxR;
     input.dy = dy / maxR;
 }
@@ -531,7 +537,7 @@ function triggerMonsterSpeak(text, duration = 160) {
     monster.speechTimer = duration;
 }
 
-// ======================= 11. KHỞI TẠO GAME =======================
+// ======================= 11. KHỞI TẠO GAME (BẢO VỆ AN TOÀN TUYỆT ĐỐI) =======================
 function initGame() {
     maze = generateMaze(COLS, ROWS);
     let emptyTiles = getEmptyTiles();
@@ -575,6 +581,7 @@ function initGame() {
     shiftTimer = SHIFT_INTERVAL;
     lastShiftTimestamp = Date.now();
 
+    // Cập nhật DOM an toàn (Kiểm tra tồn tại trước khi gán để không bị crash)
     let countEl = document.getElementById('paper-count');
     if (countEl) countEl.innerText = '0';
     let timerEl = document.getElementById('shift-timer-display');
@@ -584,7 +591,8 @@ function initGame() {
         statusEl.innerText = 'Thu thập 10 bài phốt! Cẩn thận các bẫy ẩn!';
         statusEl.style.color = '#f87171';
     }
-    document.getElementById('game-modal').classList.add('hidden');
+    let modalEl = document.getElementById('game-modal');
+    if (modalEl) modalEl.classList.add('hidden');
 }
 
 // ======================= 12. VÒNG LẶP LOGIC (UPDATE) =======================
@@ -597,7 +605,6 @@ function update() {
     let elapsed = Math.floor((now - lastShiftTimestamp) / 1000);
     shiftTimer = Math.max(0, SHIFT_INTERVAL - elapsed);
 
-    // Cập nhật số giây vào thanh HTML
     let timerEl = document.getElementById('shift-timer-display');
     if (timerEl) timerEl.innerText = `${shiftTimer}s`;
 
@@ -907,7 +914,7 @@ function update() {
     }
 }
 
-// ======================= 13. VẼ ĐỒ HỌA (ĐÃ XÓA CHỮ CANVAS GÂY ĐÈ) =======================
+// ======================= 13. VẼ ĐỒ HỌA (SÁNG RÕ NÉT - KHÔNG BỊ ĐEN HÌNH) =======================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!isPlaying) return;
@@ -921,7 +928,7 @@ function draw() {
     ctx.save();
     ctx.translate(camX, camY);
 
-    // --- A. VẼ MÊ CUNG ---
+    // --- A. VẼ MÊ CUNG TƯƠNG PHẢN CAO RÕ RÀNG ---
     let startC = Math.max(0, Math.floor((player.x - canvas.width / 2) / TILE_SIZE) - 1);
     let endC = Math.min(COLS, Math.ceil((player.x + canvas.width / 2) / TILE_SIZE) + 1);
     let startR = Math.max(0, Math.floor((player.y - canvas.height / 2) / TILE_SIZE) - 1);
@@ -932,13 +939,15 @@ function draw() {
             let x = c * TILE_SIZE;
             let y = r * TILE_SIZE;
             if (maze[r][c] === 1) {
-                ctx.fillStyle = '#0f172a';
+                // Tường màu xanh đậm có viền xanh dương neon nổi bật
+                ctx.fillStyle = '#1e293b';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                ctx.strokeStyle = '#1e293b';
-                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1.5;
                 ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
             } else {
-                ctx.fillStyle = '#050811';
+                // Đường đi màu xanh đen công nghệ sạch sẽ
+                ctx.fillStyle = '#0f172a';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
             }
         }
@@ -953,8 +962,8 @@ function draw() {
             monster.x, monster.y, 15,
             monster.x, monster.y, monster.visionRange
         );
-        grad.addColorStop(0, `rgba(${baseColor}, ${monster.isChasing ? 0.45 : 0.22})`);
-        grad.addColorStop(0.7, `rgba(${baseColor}, ${monster.isChasing ? 0.2 : 0.1})`);
+        grad.addColorStop(0, `rgba(${baseColor}, ${monster.isChasing ? 0.45 : 0.25})`);
+        grad.addColorStop(0.7, `rgba(${baseColor}, ${monster.isChasing ? 0.2 : 0.12})`);
         grad.addColorStop(1, `rgba(${baseColor}, 0)`);
 
         ctx.fillStyle = grad;
@@ -967,7 +976,7 @@ function draw() {
         ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = `rgba(${baseColor}, 0.5)`;
+        ctx.strokeStyle = `rgba(${baseColor}, 0.6)`;
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.restore();
@@ -997,21 +1006,21 @@ function draw() {
         ctx.restore();
     }
 
-    // --- D. VẼ 10 BÀI PHỐT ---
+    // --- D. VẼ 10 BÀI PHỐT PHÁT SÁNG ---
     let floatVal = Math.sin(Date.now() / 180) * 4;
     for (let p of papers) {
-        ctx.fillStyle = 'rgba(241, 196, 15, 0.25)';
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
         ctx.beginPath();
         ctx.arc(p.x, p.y + floatVal, 18, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(p.x - 8, p.y - 11 + floatVal, 16, 22);
-        ctx.strokeStyle = '#f39c12';
+        ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(p.x - 8, p.y - 11 + floatVal, 16, 22);
 
-        ctx.fillStyle = '#e74c3c';
+        ctx.fillStyle = '#ef4444';
         ctx.fillRect(p.x - 5, p.y - 6 + floatVal, 10, 2);
         ctx.fillRect(p.x - 5, p.y - 1 + floatVal, 10, 2);
         ctx.fillRect(p.x - 5, p.y + 4 + floatVal, 8, 2);
@@ -1043,17 +1052,22 @@ function draw() {
         ctx.drawImage(monsterImage, -26, -26, 52, 52);
         ctx.restore();
     } else {
-        ctx.fillStyle = monster.isFrightened ? '#10b981' : (monster.isChasing ? '#e74c3c' : '#8e44ad');
+        // Hình vẽ dự phòng sắc nét nếu ảnh chưa kịp tải lên GitHub
+        ctx.fillStyle = monster.isFrightened ? '#10b981' : (monster.isChasing ? '#ef4444' : '#a855f7');
         ctx.beginPath();
         ctx.arc(monster.x, monster.y, monster.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 
-    ctx.font = 'bold 12px Segoe UI, sans-serif';
+    ctx.font = 'bold 12px -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = monster.isFrightened ? '#34d399' : '#f87171';
     ctx.fillText(monster.name, monster.x, monster.y + monster.radius + 15);
 
+    // Thanh máu 200 HP
     if (monster.isFrightened) {
         ctx.save();
         let barW = 60;
@@ -1081,9 +1095,10 @@ function draw() {
         ctx.restore();
     }
 
+    // Bong bóng lời thoại
     if (monster.speechTimer > 0 && monster.speechText) {
         ctx.save();
-        ctx.font = 'bold 13px Segoe UI, sans-serif';
+        ctx.font = 'bold 13px -apple-system, sans-serif';
         let textMetrics = ctx.measureText(monster.speechText);
         let boxW = textMetrics.width + 24;
         let boxH = 28;
@@ -1117,7 +1132,7 @@ function draw() {
     ctx.save();
     ctx.translate(player.x, player.y);
 
-    ctx.font = 'bold 13px Segoe UI, sans-serif';
+    ctx.font = 'bold 13px -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffffff';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
@@ -1144,14 +1159,14 @@ function draw() {
     ctx.restore();
     ctx.restore();
 
-    // --- H. HIỆU ỨNG ÁNH SÁNG ĐÈN PIN ---
+    // --- H. HIỆU ỨNG ÁNH SÁNG ĐÈN PIN (ĐÃ MỞ RỘNG BÁN KÍNH LÊN 180PX ĐỂ KHÔNG BỊ ĐEN HÌNH) ---
     let lightGrad = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 85,
-        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.72
+        canvas.width / 2, canvas.height / 2, 180, // Tăng vầng sáng rõ từ 85 lên 180px
+        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.85
     );
     lightGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    lightGrad.addColorStop(0.55, 'rgba(0, 0, 0, 0.5)');
-    lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0.97)');
+    lightGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.35)');
+    lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0.88)');
     ctx.fillStyle = lightGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1170,16 +1185,14 @@ function draw() {
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px Segoe UI, sans-serif';
+        ctx.font = 'bold 15px -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(notification.text, canvas.width / 2, 102);
         ctx.restore();
     }
-
-    // ĐÃ XÓA TRIỆT ĐỂ: Dòng ctx.fillText vẽ chữ đỏ ở góc trái gây đè chữ đã bị loại bỏ!
 }
 
-// ======================= 14. GIAO DIỆN & KHỞI CHẠY =======================
+// ======================= 14. GIAO DIỆN & KHỞI CHẠY AN TOÀN =======================
 const colorDots = document.querySelectorAll('.color-dot');
 colorDots.forEach(dot => {
     dot.addEventListener('click', () => {
@@ -1190,21 +1203,30 @@ colorDots.forEach(dot => {
 });
 
 function onStartGameClicked() {
-    let nameInput = document.getElementById('player-name-input').value.trim();
-    if (nameInput) player.name = nameInput;
+    let nameInput = document.getElementById('player-name-input');
+    if (nameInput && nameInput.value.trim()) {
+        player.name = nameInput.value.trim();
+    }
 
-    document.getElementById('start-modal').classList.add('hidden');
-    document.getElementById('ui-container').classList.remove('hidden');
+    let startModal = document.getElementById('start-modal');
+    if (startModal) startModal.classList.add('hidden');
 
+    let uiContainer = document.getElementById('ui-container');
+    if (uiContainer) uiContainer.classList.remove('hidden');
+
+    // Chạy game trước để chắc chắn Canvas được vẽ
     isPlaying = true;
     initGame();
     playBGM();
 }
 
 function showModal(title, desc) {
-    document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-desc').innerText = desc;
-    document.getElementById('game-modal').classList.remove('hidden');
+    let tEl = document.getElementById('modal-title');
+    if (tEl) tEl.innerText = title;
+    let dEl = document.getElementById('modal-desc');
+    if (dEl) dEl.innerText = desc;
+    let mEl = document.getElementById('game-modal');
+    if (mEl) mEl.classList.remove('hidden');
 }
 
 function restartGame() {
@@ -1213,8 +1235,12 @@ function restartGame() {
 }
 
 function gameLoop() {
-    update();
-    draw();
+    try {
+        update();
+        draw();
+    } catch (e) {
+        console.error("Lỗi trong vòng lặp game:", e);
+    }
     requestAnimationFrame(gameLoop);
 }
 
