@@ -1,89 +1,108 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
  * File: game.js
- * Cập nhật:
- * - Tích hợp nhạc nền bgm.mp3 và hệ thống âm thanh Web Audio API tự tạo (không lo thiếu file).
- * - Nâng kích thước mê cung lên 41 x 41 ô chuẩn kỹ thuật.
- * - Giữ nguyên: Quái 200 HP, bẫy nhỏ lách được sát tường, 10 bài phốt không gần nhau.
+ * Bản sửa lỗi giao diện Mobile: Xóa hoàn toàn chữ Canvas đè lên thanh thông tin.
  */
 
-// ======================= 1. TÀI NGUYÊN HÌNH ẢNH & NHẠC NỀN =======================
+// ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
 const ASSETS = {
     monsterImg: 'assets/monster.jpg',
-    bgm: 'assets/bgm.mp3' // Sử dụng file bgm.mp3 có sẵn trong thư mục assets của bạn
+    bgmPrimary: 'assets/bgm.mp3',
+    bgmSecondary: 'bgm.mp3'
 };
 
 const monsterImage = new Image();
 monsterImage.src = ASSETS.monsterImg;
 
-// Khởi tạo nhạc nền
-const bgmAudio = new Audio(ASSETS.bgm);
+let bgmAudio = new Audio(ASSETS.bgmPrimary);
 bgmAudio.loop = true;
-bgmAudio.volume = 0.5; // Âm lượng 50%
+bgmAudio.volume = 0.55;
 
-// BỘ TỰ TẠO HIỆU ỨNG ÂM THANH (WEB AUDIO API - HOẠT ĐỘNG 100% KHÔNG CẦN TẢI FILE)
+bgmAudio.addEventListener('error', () => {
+    if (bgmAudio.src.includes('assets/bgm.mp3')) {
+        bgmAudio.src = ASSETS.bgmSecondary;
+        bgmAudio.load();
+    }
+});
+
 let audioCtx = null;
 
 function initAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    } catch (e) {}
 }
 
-// Hàm phát tiếng bíp/hiệu ứng đa dạng
+function playBGM() {
+    try {
+        initAudioContext();
+        let p = bgmAudio.play();
+        if (p !== undefined) {
+            p.catch(() => {
+                const unlock = () => {
+                    bgmAudio.play().catch(() => {});
+                    window.removeEventListener('click', unlock);
+                    window.removeEventListener('touchstart', unlock);
+                };
+                window.addEventListener('click', unlock);
+                window.addEventListener('touchstart', unlock);
+            });
+        }
+    } catch (e) {}
+}
+
 function playSynthSound(type) {
-    if (!audioCtx) return;
+    try {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
-    let now = audioCtx.currentTime;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    if (type === 'collect') {
-        // Tiếng nhặt bài phốt (nốt cao ting ting)
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, now); // Nốt D5
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // Nốt A5
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc.start(now);
-        osc.stop(now + 0.15);
-    } else if (type === 'hit') {
-        // Tiếng va chạm / tấn công (-50 HP)
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-    } else if (type === 'lose') {
-        // Tiếng thua cuộc
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.linearRampToValueAtTime(100, now + 0.6);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-        osc.start(now);
-        osc.stop(now + 0.6);
-    } else if (type === 'win') {
-        // Tiếng chiến thắng
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.15);
-        osc.frequency.setValueAtTime(783.99, now + 0.3);
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-        osc.start(now);
-        osc.stop(now + 0.5);
-    }
+        if (type === 'collect') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } else if (type === 'hit') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else if (type === 'lose') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.6);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc.start(now);
+            osc.stop(now + 0.6);
+        } else if (type === 'win') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.15);
+            osc.frequency.setValueAtTime(783.99, now + 0.3);
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now);
+            osc.stop(now + 0.5);
+        }
+    } catch (e) {}
 }
 
-// ======================= 2. KHO LỜI THOẠI CỦA TRƯỜNG GIANG =======================
+// ======================= 2. KHO LỜI THOẠI TRƯỜNG GIANG =======================
 const MONSTER_LINES = {
     spotPlayer: (name) => `${name} ơi, anh thấy em rồi! Đừng hòng chạy!`,
     onAngry: [
@@ -121,9 +140,9 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// ======================= 4. BẢN ĐỒ MÊ CUNG NÂNG LÊN 41 x 41 =======================
+// ======================= 4. BẢN ĐỒ MÊ CUNG 41 x 41 =======================
 const TILE_SIZE = 64;   
-const COLS = 41;        // Kích thước chuẩn kỹ thuật 41 x 41
+const COLS = 41;        
 const ROWS = 41;        
 let maze = [];
 let shiftCandidates = [];
@@ -254,7 +273,7 @@ function findPathBFS(startC, startR, targetC, targetR) {
         for (let [dc, dr] of dirs) {
             let nc = currC + dc;
             let nr = currR + dr;
-            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0 && !visited[nr][nc]) {
+            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && grid[nr][nc] === 0 && !visited[nr][nc]) {
                 visited[nr][nc] = true;
                 parent[`${nc},${nr}`] = [currC, currR];
                 queue.push([nc, nr]);
@@ -308,7 +327,7 @@ let monster = {
 
     isChasing: false,
     isFrightened: false,
-    hp: 200,              // 200 HP
+    hp: 200,
     maxHp: 200,
     hitCooldown: 0,
     teleportCooldown: 0,
@@ -458,7 +477,7 @@ function updateMonsterVisionArea() {
     }
 }
 
-// ======================= 9. KHỞI TẠO BẪY BEGARRITO (10 BẪY) =======================
+// ======================= 9. KHỞI TẠO BẪY BEGARRITO =======================
 function setupTeleportTraps(emptyTiles) {
     teleporters = [];
     for (let i = 0; i < 5; i++) {
@@ -478,7 +497,7 @@ function setupTeleportTraps(emptyTiles) {
 function spawnSpacedPapers(emptyTiles, count) {
     let result = [];
     let pool = [...emptyTiles].sort(() => Math.random() - 0.5);
-    const MIN_DISTANCE = 320; // Khoảng cách tối thiểu giữa 2 bài phốt
+    const MIN_DISTANCE = 320;
 
     for (let candidate of pool) {
         if (result.length >= count) break;
@@ -556,9 +575,14 @@ function initGame() {
     shiftTimer = SHIFT_INTERVAL;
     lastShiftTimestamp = Date.now();
 
-    let statusBar = document.getElementById('status-bar');
-    if (statusBar) {
-        statusBar.innerHTML = `<span>Bài phốt: <b id="paper-count">0</b>/10</span><span id="game-status">Thu thập 10 bài phốt! Cẩn thận các bẫy ẩn!</span>`;
+    let countEl = document.getElementById('paper-count');
+    if (countEl) countEl.innerText = '0';
+    let timerEl = document.getElementById('shift-timer-display');
+    if (timerEl) timerEl.innerText = `${shiftTimer}s`;
+    let statusEl = document.getElementById('game-status');
+    if (statusEl) {
+        statusEl.innerText = 'Thu thập 10 bài phốt! Cẩn thận các bẫy ẩn!';
+        statusEl.style.color = '#f87171';
     }
     document.getElementById('game-modal').classList.add('hidden');
 }
@@ -572,6 +596,10 @@ function update() {
     let now = Date.now();
     let elapsed = Math.floor((now - lastShiftTimestamp) / 1000);
     shiftTimer = Math.max(0, SHIFT_INTERVAL - elapsed);
+
+    // Cập nhật số giây vào thanh HTML
+    let timerEl = document.getElementById('shift-timer-display');
+    if (timerEl) timerEl.innerText = `${shiftTimer}s`;
 
     if (shiftTimer <= 0) {
         smartMazeShift();
@@ -607,7 +635,7 @@ function update() {
         moveEntitySliding(player, moveX * player.speed, moveY * player.speed);
     }
 
-    // --- B. XỬ LÝ BẪY DỊCH CHUYỂN (ĐI SÁT TƯỜNG SẼ KHÔNG DÍNH BẪY) ---
+    // --- B. XỬ LÝ BẪY DỊCH CHUYỂN ---
     for (let trap of teleporters) {
         if (player.teleportCooldown <= 0 && Math.hypot(player.x - trap.x, player.y - trap.y) < 10) {
             trap.isRevealed = true;
@@ -640,7 +668,7 @@ function update() {
         let p = papers[i];
         if (Math.hypot(player.x - p.x, player.y - p.y) < player.radius + 18) {
             papers.splice(i, 1);
-            playSynthSound('collect'); // Phát tiếng ting ting khi nhặt được giấy
+            playSynthSound('collect');
 
             let collected = 10 - papers.length;
             let countEl = document.getElementById('paper-count');
@@ -689,8 +717,8 @@ function update() {
     if (distToPlayer < player.radius + monster.radius) {
         if (!monster.isFrightened) {
             isGameOver = true;
-            playSynthSound('lose'); // Tiếng thua cuộc
-            bgmAudio.pause();
+            playSynthSound('lose');
+            try { bgmAudio.pause(); } catch(e){}
             showModal('BẠN ĐÃ BỊ BẮT!', `Trường Giang đã tóm được ${player.name}.`);
             return;
         } else {
@@ -698,12 +726,12 @@ function update() {
                 monster.hp -= 50;
                 monster.hitCooldown = 80;
                 screenShake = 25;
-                playSynthSound('hit'); // Tiếng đánh trúng
+                playSynthSound('hit');
 
                 if (monster.hp <= 0) {
                     isVictory = true;
-                    playSynthSound('win'); // Tiếng chiến thắng
-                    bgmAudio.pause();
+                    playSynthSound('win');
+                    try { bgmAudio.pause(); } catch(e){}
                     showModal('CHIẾN THẮNG TUYỆT ĐỐI!', `Bạn đã đánh bại Trường Giang và vạch trần mọi bài phốt!`);
                     return;
                 } else {
@@ -752,7 +780,7 @@ function update() {
         }
     }
 
-    // --- H. AI DI CHUYỂN TUẦN TRA & TRUY ĐUỔI ---
+    // --- H. AI DI CHUYỂN ---
     let mCol = Math.floor(monster.x / TILE_SIZE);
     let mRow = Math.floor(monster.y / TILE_SIZE);
 
@@ -879,7 +907,7 @@ function update() {
     }
 }
 
-// ======================= 13. VẼ ĐỒ HỌA & HIỆU ỨNG =======================
+// ======================= 13. VẼ ĐỒ HỌA (ĐÃ XÓA CHỮ CANVAS GÂY ĐÈ) =======================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!isPlaying) return;
@@ -945,7 +973,7 @@ function draw() {
         ctx.restore();
     }
 
-    // --- C. VẼ BẪY DỊCH CHUYỂN BEGARRITO (NHỎ GỌN) ---
+    // --- C. VẼ BẪY BEGARRITO (NHỎ GỌN) ---
     let trapSpin = Date.now() / 380;
     for (let trap of teleporters) {
         if (!trap.isRevealed) continue;
@@ -1026,7 +1054,6 @@ function draw() {
     ctx.fillStyle = monster.isFrightened ? '#34d399' : '#f87171';
     ctx.fillText(monster.name, monster.x, monster.y + monster.radius + 15);
 
-    // Thanh máu 200 HP (chia 4 nấc)
     if (monster.isFrightened) {
         ctx.save();
         let barW = 60;
@@ -1054,7 +1081,6 @@ function draw() {
         ctx.restore();
     }
 
-    // Bong bóng lời thoại
     if (monster.speechTimer > 0 && monster.speechText) {
         ctx.save();
         ctx.font = 'bold 13px Segoe UI, sans-serif';
@@ -1129,11 +1155,11 @@ function draw() {
     ctx.fillStyle = lightGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // --- I. BANNER THÔNG BÁO ---
+    // --- I. BANNER THÔNG BÁO TỨC GIẬN ---
     if (notification.timer > 0) {
         ctx.save();
         ctx.fillStyle = monster.isFrightened ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.92)';
-        let bannerW = 540;
+        let bannerW = Math.min(540, canvas.width - 40);
         let bannerH = 42;
         let bx = (canvas.width - bannerW) / 2;
         ctx.roundRect(bx, 75, bannerW, bannerH, 8);
@@ -1144,15 +1170,13 @@ function draw() {
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px Segoe UI, sans-serif';
+        ctx.font = 'bold 15px Segoe UI, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(notification.text, canvas.width / 2, 102);
         ctx.restore();
     }
 
-    ctx.fillStyle = shiftTimer <= 4 ? '#ef4444' : '#ffffff';
-    ctx.font = 'bold 15px Segoe UI, sans-serif';
-    ctx.fillText(`Mê cung biến đổi sau: ${shiftTimer}s`, 25, 45);
+    // ĐÃ XÓA TRIỆT ĐỂ: Dòng ctx.fillText vẽ chữ đỏ ở góc trái gây đè chữ đã bị loại bỏ!
 }
 
 // ======================= 14. GIAO DIỆN & KHỞI CHẠY =======================
@@ -1172,13 +1196,9 @@ function onStartGameClicked() {
     document.getElementById('start-modal').classList.add('hidden');
     document.getElementById('ui-container').classList.remove('hidden');
 
-    // Mở khóa âm thanh và bắt đầu phát nhạc nền
-    initAudioContext();
-    bgmAudio.currentTime = 0;
-    bgmAudio.play().catch(e => console.log('BGM Play blocked:', e));
-
     isPlaying = true;
     initGame();
+    playBGM();
 }
 
 function showModal(title, desc) {
@@ -1188,10 +1208,7 @@ function showModal(title, desc) {
 }
 
 function restartGame() {
-    // Khi chơi lại, tiếp tục phát nhạc nền
-    initAudioContext();
-    bgmAudio.currentTime = 0;
-    bgmAudio.play().catch(e => {});
+    playBGM();
     initGame();
 }
 
