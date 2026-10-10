@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Màn hình cấu hình: Đặt tên & Chọn màu -->
+    <!-- Màn hình cấu hình nhân vật ban đầu -->
     <div id="start-modal">
         <div class="menu-box">
             <h1>SÔNG DÀI MAZE</h1>
@@ -34,18 +34,21 @@
         </div>
     </div>
 
-    <!-- Khung thông tin UI phía trên -->
+    <!-- Thanh UI trạng thái trên cùng: Gọn gàng, cân đối cho Mobile -->
     <div id="ui-container" class="hidden">
         <div id="status-bar">
-            <span>Bài phốt: <b id="paper-count">0</b>/10</span>
-            <span id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy và tường!</span>
+            <div class="status-col">
+                <span class="badge">Bài phốt: <b id="paper-count">0</b>/10</span>
+                <span class="badge shift-badge">Biến đổi: <b id="shift-timer-display">18s</b></span>
+            </div>
+            <div class="status-msg" id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy ẩn!</div>
         </div>
     </div>
 
     <!-- Màn hình Canvas -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Joystick ảo cho Mobile -->
+    <!-- Nút Joystick điều khiển cho Mobile -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
