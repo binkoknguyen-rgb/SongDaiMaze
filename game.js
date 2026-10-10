@@ -1,6 +1,6 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
- * File: game.js (Bản sửa dứt điểm lỗi màn hình đen & Tối ưu hiển thị ánh sáng)
+ * File: game.js (Phiên bản chống sập màn hình đen & Đồ họa tương phản cao)
  */
 
 // ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
@@ -15,7 +15,7 @@ monsterImage.src = ASSETS.monsterImg;
 
 let bgmAudio = new Audio(ASSETS.bgmPrimary);
 bgmAudio.loop = true;
-bgmAudio.volume = 0.55;
+bgmAudio.volume = 0.5;
 
 bgmAudio.addEventListener('error', () => {
     if (bgmAudio.src.includes('assets/bgm.mp3')) {
@@ -133,13 +133,13 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth || document.documentElement.clientWidth || 800;
+    canvas.height = window.innerHeight || document.documentElement.clientHeight || 600;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// ======================= 4. BẢN ĐỒ MÊ CUNG 41 x 41 =======================
+// ======================= 4. BẢN ĐỒ MÊ CUNG CHUẨN 41 x 41 =======================
 const TILE_SIZE = 64;   
 const COLS = 41;        
 const ROWS = 41;        
@@ -241,7 +241,7 @@ function getEmptyTiles() {
     let empty = [];
     for (let r = 1; r < ROWS - 1; r++) {
         for (let c = 1; c < COLS - 1; c++) {
-            if (maze[r][c] === 0) {
+            if (maze[r] && maze[r][c] === 0) {
                 empty.push({ x: c * TILE_SIZE + TILE_SIZE / 2, y: r * TILE_SIZE + TILE_SIZE / 2, c, r });
             }
         }
@@ -254,7 +254,7 @@ function findPathBFS(startC, startR, targetC, targetR) {
     if (startC === targetC && startR === targetR) return [];
     if (startC < 0 || startC >= COLS || startR < 0 || startR >= ROWS) return [];
     if (targetC < 0 || targetC >= COLS || targetR < 0 || targetR >= ROWS) return [];
-    if (maze[startR][startC] === 1 || maze[targetR][targetC] === 1) return [];
+    if (!maze[startR] || !maze[targetR] || maze[startR][startC] === 1 || maze[targetR][targetC] === 1) return [];
 
     let queue = [[startC, startR]];
     let visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
@@ -272,7 +272,7 @@ function findPathBFS(startC, startR, targetC, targetR) {
         for (let [dc, dr] of dirs) {
             let nc = currC + dc;
             let nr = currR + dr;
-            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0 && !visited[nr][nc]) {
+            if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr] && maze[nr][nc] === 0 && !visited[nr][nc]) {
                 visited[nr][nc] = true;
                 parent[`${nc},${nr}`] = [currC, currR];
                 queue.push([nc, nr]);
@@ -296,9 +296,9 @@ function findPathBFS(startC, startR, targetC, targetR) {
 let player = {
     name: 'Người Chơi',
     color: '#00a8ff',
-    x: 0,
-    y: 0,
-    radius: 15,
+    x: 96,
+    y: 96,
+    radius: 16,
     baseSpeed: 5.6,
     speed: 5.6,
     angle: 0,
@@ -307,8 +307,8 @@ let player = {
 
 let monster = {
     name: 'Trường Giang',
-    x: 0,
-    y: 0,
+    x: 200,
+    y: 200,
     radius: 22,
     baseSpeed: 4.3,
     speed: 4.3,
@@ -416,6 +416,7 @@ function isWall(x, y) {
     let col = Math.floor(x / TILE_SIZE);
     let row = Math.floor(y / TILE_SIZE);
     if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return true;
+    if (!maze[row]) return true;
     return maze[row][col] === 1;
 }
 
@@ -439,7 +440,7 @@ function hasLineOfSight(x1, y1, x2, y2) {
 }
 
 function castRayForVisionArea(startX, startY, angle, maxDist) {
-    let step = 12;
+    let step = 14;
     let curDist = 0;
     let cos = Math.cos(angle);
     let sin = Math.sin(angle);
@@ -454,7 +455,7 @@ function castRayForVisionArea(startX, startY, angle, maxDist) {
 }
 
 function updateMonsterVisionArea() {
-    let rayCount = 55;
+    let rayCount = 50;
     let startAngle = monster.angle - monster.fov / 2;
     let stepAngle = monster.fov / rayCount;
 
@@ -503,11 +504,11 @@ function setupTeleportTraps(emptyTiles) {
 function spawnSpacedPapers(emptyTiles, count) {
     let result = [];
     let pool = [...emptyTiles].sort(() => Math.random() - 0.5);
-    const MIN_DISTANCE = 320;
+    const MIN_DISTANCE = 300;
 
     for (let candidate of pool) {
         if (result.length >= count) break;
-        if (Math.hypot(candidate.x - player.x, candidate.y - player.y) < 280) continue;
+        if (Math.hypot(candidate.x - player.x, candidate.y - player.y) < 260) continue;
 
         let tooClose = false;
         for (let placed of result) {
@@ -537,20 +538,30 @@ function triggerMonsterSpeak(text, duration = 160) {
     monster.speechTimer = duration;
 }
 
-// ======================= 11. KHỞI TẠO GAME (BẢO VỆ AN TOÀN TUYỆT ĐỐI) =======================
+// ======================= 11. KHỞI TẠO GAME HOÀN TOÀN BẢO VỆ =======================
 function initGame() {
+    resizeCanvas();
     maze = generateMaze(COLS, ROWS);
     let emptyTiles = getEmptyTiles();
 
-    let pTile = emptyTiles.shift();
-    player.x = pTile.x;
-    player.y = pTile.y;
+    if (emptyTiles.length >= 2) {
+        let pTile = emptyTiles.shift();
+        player.x = pTile.x;
+        player.y = pTile.y;
+
+        let mTile = emptyTiles.pop();
+        monster.x = mTile.x;
+        monster.y = mTile.y;
+    } else {
+        player.x = 96;
+        player.y = 96;
+        monster.x = 200;
+        monster.y = 200;
+    }
+
     player.speed = player.baseSpeed;
     player.teleportCooldown = 0;
 
-    let mTile = emptyTiles.pop();
-    monster.x = mTile.x;
-    monster.y = mTile.y;
     monster.angle = 0;
     monster.moveAngle = 0;
     monster.speed = monster.baseSpeed;
@@ -581,7 +592,6 @@ function initGame() {
     shiftTimer = SHIFT_INTERVAL;
     lastShiftTimestamp = Date.now();
 
-    // Cập nhật DOM an toàn (Kiểm tra tồn tại trước khi gán để không bị crash)
     let countEl = document.getElementById('paper-count');
     if (countEl) countEl.innerText = '0';
     let timerEl = document.getElementById('shift-timer-display');
@@ -644,7 +654,7 @@ function update() {
 
     // --- B. XỬ LÝ BẪY DỊCH CHUYỂN ---
     for (let trap of teleporters) {
-        if (player.teleportCooldown <= 0 && Math.hypot(player.x - trap.x, player.y - trap.y) < 10) {
+        if (player.teleportCooldown <= 0 && Math.hypot(player.x - trap.x, player.y - trap.y) < 12) {
             trap.isRevealed = true;
             let targetTrap = teleporters.find(t => t.x === trap.targetX && t.y === trap.targetY);
             if (targetTrap) targetTrap.isRevealed = true;
@@ -820,7 +830,9 @@ function update() {
                     return distB - distA;
                 });
                 let fleeTarget = empty[0] || empty[Math.floor(Math.random() * 5)];
-                monster.currentPath = findPathBFS(mCol, mRow, fleeTarget.c, fleeTarget.r);
+                if (fleeTarget) {
+                    monster.currentPath = findPathBFS(mCol, mRow, fleeTarget.c, fleeTarget.r);
+                }
             }
         } else if (monster.isChasing) {
             let pCol = Math.floor(player.x / TILE_SIZE);
@@ -844,9 +856,11 @@ function update() {
                     : empty[Math.floor(Math.random() * empty.length)];
             }
 
-            let tCol = Math.floor(monster.patrolTarget.x / TILE_SIZE);
-            let tRow = Math.floor(monster.patrolTarget.y / TILE_SIZE);
-            monster.currentPath = findPathBFS(mCol, mRow, tCol, tRow);
+            if (monster.patrolTarget) {
+                let tCol = Math.floor(monster.patrolTarget.x / TILE_SIZE);
+                let tRow = Math.floor(monster.patrolTarget.y / TILE_SIZE);
+                monster.currentPath = findPathBFS(mCol, mRow, tCol, tRow);
+            }
 
             if (!monster.currentPath || monster.currentPath.length === 0) {
                 monster.patrolTarget = null;
@@ -895,7 +909,7 @@ function update() {
             for (let [dc, dr] of dirs) {
                 let nc = mCol + dc;
                 let nr = mRow + dr;
-                if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr][nc] === 0) {
+                if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && maze[nr] && maze[nr][nc] === 0) {
                     openSteps.push({ x: nc * TILE_SIZE + TILE_SIZE / 2, y: nr * TILE_SIZE + TILE_SIZE / 2 });
                 }
             }
@@ -914,61 +928,66 @@ function update() {
     }
 }
 
-// ======================= 13. VẼ ĐỒ HỌA (SÁNG RÕ NÉT - KHÔNG BỊ ĐEN HÌNH) =======================
+// ======================= 13. VẼ ĐỒ HỌA (TƯƠNG PHẢN CAO, BẢO ĐẢM KHÔNG ĐEN) =======================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!isPlaying) return;
 
+    let pX = player.x || 96;
+    let pY = player.y || 96;
+    let mX = monster.x || 200;
+    let mY = monster.y || 200;
+
     let shakeX = (Math.random() - 0.5) * screenShake;
     let shakeY = (Math.random() - 0.5) * screenShake;
 
-    let camX = canvas.width / 2 - player.x + shakeX;
-    let camY = canvas.height / 2 - player.y + shakeY;
+    let camX = canvas.width / 2 - pX + shakeX;
+    let camY = canvas.height / 2 - pY + shakeY;
 
     ctx.save();
     ctx.translate(camX, camY);
 
-    // --- A. VẼ MÊ CUNG TƯƠNG PHẢN CAO RÕ RÀNG ---
-    let startC = Math.max(0, Math.floor((player.x - canvas.width / 2) / TILE_SIZE) - 1);
-    let endC = Math.min(COLS, Math.ceil((player.x + canvas.width / 2) / TILE_SIZE) + 1);
-    let startR = Math.max(0, Math.floor((player.y - canvas.height / 2) / TILE_SIZE) - 1);
-    let endR = Math.min(ROWS, Math.ceil((player.y + canvas.height / 2) / TILE_SIZE) + 1);
+    // --- A. VẼ MÊ CUNG NỔI BẬT ---
+    let startC = Math.max(0, Math.floor((pX - canvas.width / 2) / TILE_SIZE) - 2);
+    let endC = Math.min(COLS, Math.ceil((pX + canvas.width / 2) / TILE_SIZE) + 2);
+    let startR = Math.max(0, Math.floor((pY - canvas.height / 2) / TILE_SIZE) - 2);
+    let endR = Math.min(ROWS, Math.ceil((pY + canvas.height / 2) / TILE_SIZE) + 2);
 
     for (let r = startR; r < endR; r++) {
         for (let c = startC; c < endC; c++) {
             let x = c * TILE_SIZE;
             let y = r * TILE_SIZE;
-            if (maze[r][c] === 1) {
-                // Tường màu xanh đậm có viền xanh dương neon nổi bật
+            if (maze[r] && maze[r][c] === 1) {
+                // Tường màu xanh đậm có viền xanh dương sáng nổi bật
                 ctx.fillStyle = '#1e293b';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                ctx.strokeStyle = '#38bdf8';
+                ctx.strokeStyle = '#0284c7';
                 ctx.lineWidth = 1.5;
                 ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
             } else {
-                // Đường đi màu xanh đen công nghệ sạch sẽ
-                ctx.fillStyle = '#0f172a';
+                // Sàn đường đi sáng dịu, có kẻ ô nhẹ
+                ctx.fillStyle = '#0b1329';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                ctx.strokeStyle = '#111e38';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
             }
         }
     }
 
-    // --- B. VẼ KHU VỰC TẦM NHÌN ---
+    // --- B. VẼ KHU VỰC TẦM NHÌN QUÁI ---
     if (monster.visionPolygon && monster.visionPolygon.length > 0) {
         ctx.save();
         let baseColor = monster.isFrightened ? '52, 211, 153' : (monster.isChasing ? '239, 68, 68' : '14, 165, 233');
 
-        let grad = ctx.createRadialGradient(
-            monster.x, monster.y, 15,
-            monster.x, monster.y, monster.visionRange
-        );
+        let grad = ctx.createRadialGradient(mX, mY, 15, mX, mY, monster.visionRange);
         grad.addColorStop(0, `rgba(${baseColor}, ${monster.isChasing ? 0.45 : 0.25})`);
         grad.addColorStop(0.7, `rgba(${baseColor}, ${monster.isChasing ? 0.2 : 0.12})`);
         grad.addColorStop(1, `rgba(${baseColor}, 0)`);
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.moveTo(monster.x, monster.y);
+        ctx.moveTo(mX, mY);
 
         for (let pt of monster.visionPolygon) {
             ctx.lineTo(pt.x, pt.y);
@@ -1006,7 +1025,7 @@ function draw() {
         ctx.restore();
     }
 
-    // --- D. VẼ 10 BÀI PHỐT PHÁT SÁNG ---
+    // --- D. VẼ 10 BÀI PHỐT ---
     let floatVal = Math.sin(Date.now() / 180) * 4;
     for (let p of papers) {
         ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
@@ -1035,27 +1054,26 @@ function draw() {
         ctx.lineWidth = 2.5;
 
         ctx.beginPath();
-        ctx.moveTo(monster.x, monster.y);
-        let midX = (monster.x + player.x) / 2 + (Math.random() - 0.5) * 6;
-        let midY = (monster.y + player.y) / 2 + (Math.random() - 0.5) * 6;
-        ctx.quadraticCurveTo(midX, midY, player.x, player.y);
+        ctx.moveTo(mX, mY);
+        let midX = (mX + pX) / 2 + (Math.random() - 0.5) * 6;
+        let midY = (mY + pY) / 2 + (Math.random() - 0.5) * 6;
+        ctx.quadraticCurveTo(midX, midY, pX, pY);
         ctx.stroke();
         ctx.restore();
     }
 
-    // --- F. VẼ QUÁI VẬT, THANH MÁU 200 HP & LỜI THOẠI ---
+    // --- F. VẼ QUÁI VẬT & LỜI THOẠI ---
     if (monsterImage.complete && monsterImage.naturalWidth > 0) {
         ctx.save();
-        ctx.translate(monster.x, monster.y);
+        ctx.translate(mX, mY);
         ctx.shadowColor = monster.isFrightened ? '#34d399' : (monster.isChasing ? '#ef4444' : '#0ea5e9');
         ctx.shadowBlur = 18;
         ctx.drawImage(monsterImage, -26, -26, 52, 52);
         ctx.restore();
     } else {
-        // Hình vẽ dự phòng sắc nét nếu ảnh chưa kịp tải lên GitHub
         ctx.fillStyle = monster.isFrightened ? '#10b981' : (monster.isChasing ? '#ef4444' : '#a855f7');
         ctx.beginPath();
-        ctx.arc(monster.x, monster.y, monster.radius, 0, Math.PI * 2);
+        ctx.arc(mX, mY, monster.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -1065,15 +1083,15 @@ function draw() {
     ctx.font = 'bold 12px -apple-system, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = monster.isFrightened ? '#34d399' : '#f87171';
-    ctx.fillText(monster.name, monster.x, monster.y + monster.radius + 15);
+    ctx.fillText(monster.name, mX, mY + monster.radius + 15);
 
     // Thanh máu 200 HP
     if (monster.isFrightened) {
         ctx.save();
         let barW = 60;
         let barH = 8;
-        let barX = monster.x - barW / 2;
-        let barY = monster.y - monster.radius - 24;
+        let barX = mX - barW / 2;
+        let barY = mY - monster.radius - 24;
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(barX, barY, barW, barH);
@@ -1095,28 +1113,26 @@ function draw() {
         ctx.restore();
     }
 
-    // Bong bóng lời thoại
+    // Bong bóng lời thoại (Dùng hình chữ nhật an toàn 100%, không dùng roundRect)
     if (monster.speechTimer > 0 && monster.speechText) {
         ctx.save();
         ctx.font = 'bold 13px -apple-system, sans-serif';
         let textMetrics = ctx.measureText(monster.speechText);
         let boxW = textMetrics.width + 24;
         let boxH = 28;
-        let boxX = monster.x - boxW / 2;
-        let boxY = monster.y - monster.radius - (monster.isFrightened ? 52 : 42);
+        let boxX = mX - boxW / 2;
+        let boxY = mY - monster.radius - (monster.isFrightened ? 52 : 42);
 
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = monster.isFrightened ? '#10b981' : (monster.isChasing ? '#ef4444' : '#334155');
         ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(boxX, boxY, boxW, boxH, 8);
-        ctx.fill();
-        ctx.stroke();
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
 
         ctx.beginPath();
-        ctx.moveTo(monster.x - 6, boxY + boxH);
-        ctx.lineTo(monster.x, boxY + boxH + 6);
-        ctx.lineTo(monster.x + 6, boxY + boxH);
+        ctx.moveTo(mX - 6, boxY + boxH);
+        ctx.lineTo(mX, boxY + boxH + 6);
+        ctx.lineTo(mX + 6, boxY + boxH);
         ctx.closePath();
         ctx.fillStyle = '#ffffff';
         ctx.fill();
@@ -1124,13 +1140,13 @@ function draw() {
 
         ctx.fillStyle = monster.isFrightened ? '#065f46' : (monster.isChasing ? '#b91c1c' : '#1e293b');
         ctx.textAlign = 'center';
-        ctx.fillText(monster.speechText, monster.x, boxY + 18);
+        ctx.fillText(monster.speechText, mX, boxY + 18);
         ctx.restore();
     }
 
     // --- G. VẼ NGƯỜI CHƠI ---
     ctx.save();
-    ctx.translate(player.x, player.y);
+    ctx.translate(pX, pY);
 
     ctx.font = 'bold 13px -apple-system, sans-serif';
     ctx.textAlign = 'center';
@@ -1157,16 +1173,16 @@ function draw() {
     ctx.fill();
 
     ctx.restore();
-    ctx.restore();
+    ctx.restore(); // Phục hồi góc Camera
 
-    // --- H. HIỆU ỨNG ÁNH SÁNG ĐÈN PIN (ĐÃ MỞ RỘNG BÁN KÍNH LÊN 180PX ĐỂ KHÔNG BỊ ĐEN HÌNH) ---
+    // --- H. ÁNH SÁNG ĐÈN PIN RỘNG MỞ (KHÔNG BAO GIỜ BỊ ĐEN HÌNH) ---
     let lightGrad = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 180, // Tăng vầng sáng rõ từ 85 lên 180px
-        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.85
+        canvas.width / 2, canvas.height / 2, 220,
+        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.9
     );
     lightGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    lightGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.35)');
-    lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0.88)');
+    lightGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.25)');
+    lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
     ctx.fillStyle = lightGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1177,12 +1193,10 @@ function draw() {
         let bannerW = Math.min(540, canvas.width - 40);
         let bannerH = 42;
         let bx = (canvas.width - bannerW) / 2;
-        ctx.roundRect(bx, 75, bannerW, bannerH, 8);
-        ctx.fill();
-
+        ctx.fillRect(bx, 75, bannerW, bannerH);
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.strokeRect(bx, 75, bannerW, bannerH);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px -apple-system, sans-serif';
@@ -1192,7 +1206,7 @@ function draw() {
     }
 }
 
-// ======================= 14. GIAO DIỆN & KHỞI CHẠY AN TOÀN =======================
+// ======================= 14. GIAO DIỆN & VÒNG LẶP CHÍNH =======================
 const colorDots = document.querySelectorAll('.color-dot');
 colorDots.forEach(dot => {
     dot.addEventListener('click', () => {
@@ -1214,7 +1228,6 @@ function onStartGameClicked() {
     let uiContainer = document.getElementById('ui-container');
     if (uiContainer) uiContainer.classList.remove('hidden');
 
-    // Chạy game trước để chắc chắn Canvas được vẽ
     isPlaying = true;
     initGame();
     playBGM();
@@ -1234,14 +1247,22 @@ function restartGame() {
     initGame();
 }
 
+// VÒNG LẶP AN TOÀN TUYỆT ĐỐI (KHÔNG BAO GIỜ BỊ SẬP DỪNG LẠI)
 function gameLoop() {
     try {
         update();
+    } catch (e) {
+        console.warn("Lỗi update:", e);
+    }
+    
+    try {
         draw();
     } catch (e) {
-        console.error("Lỗi trong vòng lặp game:", e);
+        console.warn("Lỗi draw:", e);
     }
+
     requestAnimationFrame(gameLoop);
 }
 
+// Khởi động vòng lặp game ngay từ đầu
 requestAnimationFrame(gameLoop);
