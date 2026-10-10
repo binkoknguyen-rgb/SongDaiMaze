@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sông Dài Maze</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Màn hình cấu hình: Đặt tên & Chọn màu -->
+    <div id="start-modal">
+        <div class="menu-box">
+            <h1>SÔNG DÀI MAZE</h1>
+            <p class="subtitle">Thiết lập nhân vật của bạn trước khi bước vào mê cung</p>
+
+            <div class="form-group">
+                <label for="player-name-input">Tên người chơi:</label>
+                <input type="text" id="player-name-input" placeholder="Nhập tên của bạn..." maxlength="12" value="Người Chơi">
+            </div>
+
+            <div class="form-group">
+                <label>Chọn màu biểu tượng:</label>
+                <div class="color-picker" id="color-picker-container">
+                    <div class="color-dot active" data-color="#00a8ff" style="background: #00a8ff;"></div>
+                    <div class="color-dot" data-color="#e74c3c" style="background: #e74c3c;"></div>
+                    <div class="color-dot" data-color="#2ecc71" style="background: #2ecc71;"></div>
+                    <div class="color-dot" data-color="#f1c40f" style="background: #f1c40f;"></div>
+                    <div class="color-dot" data-color="#9b59b6" style="background: #9b59b6;"></div>
+                    <div class="color-dot" data-color="#e67e22" style="background: #e67e22;"></div>
+                </div>
+            </div>
+
+            <button id="btn-start" onclick="onStartGameClicked()">BẮT ĐẦU VÀO MÊ CUNG</button>
+        </div>
+    </div>
+
+    <!-- Khung thông tin UI phía trên -->
+    <div id="ui-container" class="hidden">
+        <div id="status-bar">
+            <span>Bài phốt: <b id="paper-count">0</b>/10</span>
+            <span id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy và tường!</span>
+        </div>
+    </div>
+
+    <!-- Màn hình Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Joystick ảo cho Mobile -->
+    <div id="joystick-zone">
+        <div id="joystick-base">
+            <div id="joystick-stick"></div>
+        </div>
+    </div>
+
+    <!-- Màn hình kết thúc game -->
+    <div id="game-modal" class="hidden">
+        <div class="modal-content">
+            <h1 id="modal-title">BẠN ĐÃ THUA!</h1>
+            <p id="modal-desc">Quái vật đã bắt được bạn trong mê cung.</p>
+            <button id="btn-restart" onclick="restartGame()">Chơi lại</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
