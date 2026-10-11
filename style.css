@@ -21,18 +21,18 @@ body, html {
     height: 100vh;
 }
 
-/* Thanh thông tin UI trên cùng */
+/* Thanh UI trên cùng: Tự thích ứng màn hình điện thoại & tai thỏ */
 #ui-container {
     position: absolute;
-    top: max(12px, env(safe-area-inset-top));
+    top: max(10px, env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 32px);
+    width: calc(100% - 24px);
     max-width: 440px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 12px;
-    padding: 8px 14px;
+    padding: 8px 12px;
     color: #fff;
     pointer-events: none;
     z-index: 30;
@@ -55,8 +55,8 @@ body, html {
     font-size: 13px;
     font-weight: 600;
     color: #cbd5e1;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 10px;
     border-radius: 6px;
 }
 
@@ -65,25 +65,23 @@ body, html {
     font-size: 15px;
 }
 
-.timer-badge b {
-    color: #ef4444;
-    font-size: 14px;
-}
-
 .status-message {
     font-size: 12px;
     font-weight: 600;
     color: #f87171;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* NÚT JOYSTICK TRÊN MOBILE (ĐÃ TĂNG KÍCH THƯỚC LỚN HƠN) */
+/* Joystick Mobile: To hơn, nhạy và hỗ trợ viền an toàn đáy */
 #joystick-zone {
     position: absolute;
-    bottom: max(30px, env(safe-area-inset-bottom));
-    left: 30px;
-    width: 145px;   /* Tăng từ 110px lên 145px */
-    height: 145px;
+    bottom: max(25px, env(safe-area-inset-bottom));
+    left: 25px;
+    width: 140px;
+    height: 140px;
     z-index: 30;
 }
 
@@ -92,16 +90,16 @@ body, html {
     width: 100%;
     height: 100%;
     background: rgba(255, 255, 255, 0.14);
-    border: 2.5px solid rgba(255, 255, 255, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 #joystick-stick {
     position: absolute;
-    width: 58px;    /* Tăng núm di chuyển từ 44px lên 58px */
-    height: 58px;
-    background: rgba(255, 255, 255, 0.8);
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.82);
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -110,7 +108,7 @@ body, html {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Modal bắt đầu & giới thiệu Boss */
+/* Modals */
 #start-modal, #boss-intro-modal, #game-modal {
     position: absolute;
     top: 0;
@@ -129,7 +127,7 @@ body, html {
     background: rgba(23, 32, 48, 0.95);
     border: 1.5px solid #334155;
     border-radius: 14px;
-    padding: 26px 20px;
+    padding: 24px 20px;
     width: 100%;
     max-width: 400px;
     text-align: center;
@@ -151,7 +149,7 @@ body, html {
 .boss-intro-sub {
     font-size: 13px;
     color: #cbd5e1;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .boss-rules {
@@ -159,7 +157,7 @@ body, html {
     font-size: 13px;
     line-height: 1.5;
     color: #e2e8f0;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.85);
     padding: 12px 14px;
     border-radius: 8px;
     margin-bottom: 16px;
@@ -173,7 +171,7 @@ body, html {
 
 #btn-fight-boss {
     width: 100%;
-    padding: 12px;
+    padding: 13px;
     font-size: 16px;
     font-weight: bold;
     color: #fff;
