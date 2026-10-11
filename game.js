@@ -1,11 +1,12 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
  * File: game.js
- * Cập nhật:
- * 1. Chống kẹt tường quái vật (Radius chuẩn 18px & Di chuyển tim đường).
- * 2. Lộ vị trí 10 giây (600 frames) khi nhặt bài phốt.
- * 3. Tốc độ quái ban đầu thấp (4.1), đến 5 bài thì bằng (5.6), từ 5 trở lên nhanh vượt trội (lên đến 7.1).
- * 4. Đầy đủ Boss Phase 2 Mười Khó, Đấu trường, Thanh máu HUD, Túi máu 500 HP.
+ * Bản cập nhật:
+ * 1. Lộ vị trí 5 giây khi nhặt bài phốt (300 frames).
+ * 2. Cắt đuôi dễ dàng hơn: breakDistance giảm còn 430px, mất góc nhìn 1.5s là đứt dây.
+ * 3. Sửa dứt điểm lỗi quái đứng yên (Tự động chuyển tuần tra & lang thang liên tục).
+ * 4. Tốc độ quái ban đầu 4.1 -> 5 bài = 5.6 -> 10 bài = 7.1.
+ * 5. Giữ nguyên 100% Phase 2 Mười Khó, Đấu trường, Thanh máu HUD, Đồng minh 5s, Túi máu 500 HP.
  */
 
 // ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
@@ -367,7 +368,7 @@ let player = {
     damage: 100,
     attackCooldown: 0,
     teleportCooldown: 0,
-    revealTimer: 0 // Đếm lùi 10 giây lộ vị trí khi nhặt bài phốt (600 frames)
+    revealTimer: 0 // Đếm lùi 5 giây lộ vị trí khi nhặt bài phốt (300 frames)
 };
 
 let monster = {
@@ -375,11 +376,12 @@ let monster = {
     name: 'Trường Giang',
     x: 1300,
     y: 1300,
-    radius: 18,        // Bán kính va chạm mê cung chuẩn 18px (Tránh kẹt góc tường 100%)
-    baseSpeed: 4.1,     // Xuất phát điểm chậm hơn người chơi (4.1 < 5.6)
+    radius: 18,        // Bán kính va chạm chuẩn giúp lướt góc cua mượt mà
+    baseSpeed: 4.1,     // Xuất phát điểm ban đầu chậm hơn người chơi (4.1 < 5.6)
     speed: 4.1,
     visionRange: 550,
-    breakDistance: 760,
+    breakDistance: 430, // Giảm từ 760 xuống 430px: Giúp người chơi dễ cắt đuôi hơn!
+    lostSightTimer: 0,  // Đếm lùi thời gian mất góc nhìn thẳng
     angle: 0,
     moveAngle: 0,
     fov: Math.PI * 1.33,
@@ -670,9 +672,11 @@ function initGame() {
     monster.name = 'Trường Giang';
     monster.x = (COLS - 3) * TILE_SIZE;
     monster.y = (ROWS - 3) * TILE_SIZE;
-    monster.radius = 18;          // Bán kính chuẩn chống kẹt tường
-    monster.baseSpeed = 4.1;       // Tốc độ ban đầu thấp hơn người chơi (4.1 < 5.6)
+    monster.radius = 18;          // Bán kính chuẩn chống kẹt góc
+    monster.baseSpeed = 4.1;       // Tốc độ ban đầu thấp hơn người chơi
     monster.speed = 4.1;
+    monster.breakDistance = 430;  // Dễ cắt đuôi hơn
+    monster.lostSightTimer = 0;
     monster.hp = 10000;
     monster.maxHp = 10000;
     monster.damage = 100;
@@ -742,7 +746,7 @@ function startBossBattle() {
 
     collapseMazeToArena();
     gameState = 'ARENA';
-    monster.radius = 28; // Trong đấu trường không còn tường, mở rộng kích cỡ Boss
+    monster.radius = 28; // Tăng kích cỡ quái trong đấu trường mở
 
     playBossBGM();
 
@@ -832,13 +836,13 @@ function update() {
             shiftTimer = SHIFT_INTERVAL;
         }
 
-        // Đếm lùi 10 giây lộ vị trí (600 frames)
+        // Đếm lùi 5 GIÂY LỘ VỊ TRÍ (300 FRAMES)
         if (player.revealTimer > 0) {
             player.revealTimer--;
             monster.isChasing = true;
         }
 
-        // Nhặt bài phốt -> TĂNG TỐC ĐỘ QUÁI & LỘ VỊ TRÍ 10 GIÂY
+        // Nhặt bài phốt -> LỘ VỊ TRÍ 5 GIÂY & TĂNG TỐC ĐỘ QUÁI
         for (let i = papers.length - 1; i >= 0; i--) {
             let p = papers[i];
             if (Math.hypot(player.x - p.x, player.y - p.y) < player.radius + 18) {
@@ -849,14 +853,14 @@ function update() {
                 let countEl = document.getElementById('paper-count');
                 if (countEl) countEl.innerText = collected;
 
-                // CÔNG THỨC ĐIỀU TỐC: Ban đầu 4.1 -> 5 bài = 5.6 -> 10 bài = 7.1
+                // TỐC ĐỘ QUÁI: 0 bài: 4.1 -> 5 bài: 5.6 -> 10 bài: 7.1
                 monster.speed = 4.1 + collected * 0.3;
 
                 if (papers.length > 0) {
-                    player.revealTimer = 600; // LỘ VỊ TRÍ 10 GIÂY (600 FRAMES)
-                    notification.text = `⚠️ BẠN BỊ LỘ VỊ TRÍ 10 GIÂY! TỐC ĐỘ QUÁI ĐÃ TĂNG LÊN ${monster.speed.toFixed(1)}!`;
-                    notification.timer = 180;
-                    triggerMonsterSpeak(`Anh thấy em rồi ${player.name}, chạy đâu cho thoát!`, 140);
+                    player.revealTimer = 300; // LỘ VỊ TRÍ ĐÚNG 5 GIÂY (300 FRAMES)
+                    notification.text = `⚠️ LỘ VỊ TRÍ 5 GIÂY! TỐC ĐỘ QUÁI: ${monster.speed.toFixed(1)}!`;
+                    notification.timer = 150;
+                    triggerMonsterSpeak(`Anh thấy em rồi ${player.name}, đừng hòng trốn!`, 130);
                 } else {
                     gameState = 'BOSS_POPUP';
                     let introEl = document.getElementById('boss-intro-modal');
@@ -868,17 +872,26 @@ function update() {
 
         let distToPlayer = Math.hypot(player.x - monster.x, player.y - monster.y);
 
-        // Đứt sợi chỉ đỏ truy đuổi nếu vượt quá 760px và mất góc nhìn (khi không bị lộ 10s)
+        // CƠ CHẾ DỄ CẮT ĐUÔI HƠN:
         if (monster.isChasing && player.revealTimer <= 0) {
             let hasLOS = hasLineOfSight(monster.x, monster.y, player.x, player.y);
-            if (!hasLOS && distToPlayer > monster.breakDistance) {
+            if (!hasLOS) {
+                monster.lostSightTimer++; // Đếm thời gian mất góc nhìn
+            } else {
+                monster.lostSightTimer = 0;
+            }
+
+            // CẮT ĐUÔI KHI: Mất góc nhìn và cách xa hơn 430px HOẶC mất góc nhìn liên tục trong 1.5 giây (90 frames)
+            if ((!hasLOS && distToPlayer > monster.breakDistance) || monster.lostSightTimer > 90) {
                 monster.isChasing = false;
                 monster.currentPath = [];
-                triggerMonsterSpeak(`Ủa, chạy xa dữ vậy?!`, 120);
+                monster.patrolTarget = null; // Reset mục tiêu để lập tức chuyển sang tuần tra
+                monster.lostSightTimer = 0;
+                triggerMonsterSpeak(`Ủa, cắt đuôi lẹ dữ vậy?!`, 120);
             }
         }
 
-        // Va chạm bị bắt trong mê cung
+        // Bị bắt trong mê cung
         if (distToPlayer < player.radius + monster.radius) {
             isGameOver = true;
             playSynthSound('player_hit');
@@ -888,7 +901,7 @@ function update() {
 
         updateMonsterVisionArea();
 
-        // TÍNH ĐƯỜNG BFS ĐỊNH KỲ 150MS/LẦN
+        // TÍNH ĐƯỜNG BFS VÀ SỬA TRIỆT ĐỂ LỖI ĐỨNG YÊN
         let mCol = Math.floor(monster.x / TILE_SIZE);
         let mRow = Math.floor(monster.y / TILE_SIZE);
 
@@ -899,12 +912,19 @@ function update() {
                 let pRow = Math.floor(player.y / TILE_SIZE);
                 monster.currentPath = findPathBFS(mCol, mRow, pCol, pRow);
             } else {
-                if (!monster.patrolTarget || Math.hypot(monster.x - monster.patrolTarget.x, monster.y - monster.patrolTarget.y) < 35) {
+                // SỬA LỖI ĐỨNG YÊN: Nếu chưa có mục tiêu hoặc đã hết đường, lập tức chọn mục tiêu mới!
+                let needNewTarget = false;
+                if (!monster.patrolTarget || Math.hypot(monster.x - monster.patrolTarget.x, monster.y - monster.patrolTarget.y) < 35 || monster.currentPath.length === 0) {
+                    needNewTarget = true;
+                }
+
+                if (needNewTarget) {
                     let empty = getEmptyTiles();
-                    monster.patrolTarget = (papers.length > 0 && Math.random() < 0.75) 
+                    monster.patrolTarget = (papers.length > 0 && Math.random() < 0.6) 
                         ? papers[Math.floor(Math.random() * papers.length)] 
                         : empty[Math.floor(Math.random() * empty.length)];
                 }
+
                 if (monster.patrolTarget) {
                     let tCol = Math.floor(monster.patrolTarget.x / TILE_SIZE);
                     let tRow = Math.floor(monster.patrolTarget.y / TILE_SIZE);
@@ -913,7 +933,7 @@ function update() {
             }
         }
 
-        // DI CHUYỂN TIM ĐƯỜNG MƯỢT MÀ (CHỐNG KẸT TƯỜNG 100%)
+        // DI CHUYỂN THEO TIM ĐƯỜNG MƯỢT MÀ
         let moveSpeed = monster.isChasing ? monster.speed : (monster.speed * 0.75);
 
         if (monster.currentPath && monster.currentPath.length > 0) {
@@ -937,6 +957,28 @@ function update() {
                 monster.x += (dx / dist) * moveSpeed;
                 monster.y += (dy / dist) * moveSpeed;
             }
+        } else if (!monster.isChasing) {
+            // DỰ PHÒNG TỰ ĐỘNG LANG THANG (Không bao giờ đứng im một chỗ)
+            const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+            let openSteps = [];
+            for (let [dc, dr] of dirs) {
+                let nc = mCol + dc;
+                let nr = mRow + dr;
+                if (nc >= 1 && nc < COLS - 1 && nr >= 1 && nr < ROWS - 1 && maze[nr] && maze[nr][nc] === 0) {
+                    openSteps.push({ x: nc * TILE_SIZE + TILE_SIZE / 2, y: nr * TILE_SIZE + TILE_SIZE / 2 });
+                }
+            }
+            if (openSteps.length > 0) {
+                let nextStep = openSteps[Math.floor(Math.random() * openSteps.length)];
+                let wDx = nextStep.x - monster.x;
+                let wDy = nextStep.y - monster.y;
+                let wDist = Math.hypot(wDx, wDy);
+                if (wDist > 1) {
+                    monster.moveAngle = Math.atan2(wDy, wDx);
+                    monster.angle = monster.moveAngle;
+                    moveEntitySliding(monster, (wDx / wDist) * (moveSpeed * 0.7), (wDy / wDist) * (moveSpeed * 0.7));
+                }
+            }
         } else if (monster.isChasing) {
             let directDx = player.x - monster.x;
             let directDy = player.y - monster.y;
@@ -945,17 +987,6 @@ function update() {
                 monster.moveAngle = Math.atan2(directDy, directDx);
                 monster.angle = monster.moveAngle;
                 moveEntitySliding(monster, (directDx / directDist) * moveSpeed, (directDy / directDist) * moveSpeed);
-            }
-        }
-
-        // Phao cứu sinh: Nếu quái vật vô tình lọt vào tường, kéo ngay về tâm ô trống an toàn
-        if (isWall(monster.x, monster.y)) {
-            let empty = getEmptyTiles();
-            empty.sort((a, b) => Math.hypot(a.x - monster.x, a.y - monster.y) - Math.hypot(b.x - monster.x, b.y - monster.y));
-            if (empty[0]) {
-                monster.x = empty[0].x;
-                monster.y = empty[0].y;
-                monster.currentPath = [];
             }
         }
         return;
@@ -973,7 +1004,7 @@ function update() {
         }
     }
 
-    // 2. Thả túi cứu thương (+500 HP)
+    // 2. Thả túi máu cứu thương (+500 HP)
     medkitSpawnTimer++;
     if (medkitSpawnTimer > 380 && medkits.length < 5) {
         medkitSpawnTimer = 0;
@@ -1116,9 +1147,8 @@ function update() {
         triggerMonsterSpeak(monster.phase === 2 ? `Mười Khó hồi phục năng lượng!` : `Anh tẩy trắng thành công rồi!`, 120);
     }
 
-    // Chiêu thức riêng Phase 2
+    // Chiêu riêng Phase 2
     if (monster.phase === 2) {
-        // Chiêu 4: Lướt Chém Thần Tốc
         monster.phase2DashCooldown--;
         if (monster.phase2DashCooldown <= 0 && primaryTarget && !monster.isDashing) {
             monster.phase2DashCooldown = 320;
@@ -1146,7 +1176,6 @@ function update() {
             }
         }
 
-        // Chiêu 5: Bão Đĩa Bay Nộ Khí 8 Hướng
         monster.phase2RadialCooldown--;
         if (monster.phase2RadialCooldown <= 0) {
             monster.phase2RadialCooldown = 420;
@@ -1193,7 +1222,7 @@ function update() {
         }
     }
 
-    // 8. Hồi sinh đồng minh sau 5s
+    // Hồi sinh đồng minh
     for (let i = allies.length - 1; i >= 0; i--) {
         if (allies[i].hp <= 0) {
             allies.splice(i, 1);
@@ -1201,13 +1230,13 @@ function update() {
         }
     }
 
-    // Cập nhật giao diện
+    // Cập nhật UI
     let hpUi = document.getElementById('player-hp-ui');
     if (hpUi) hpUi.innerText = Math.max(0, player.hp);
     let badgeTimer = document.getElementById('badge-timer');
     if (badgeTimer) badgeTimer.innerHTML = `Cộng đồng: <b style="color:#38bdf8">${allies.length}</b>/20`;
 
-    // 9. Kiểm tra kết thúc
+    // Kiểm tra kết thúc
     if (player.hp <= 0) {
         isGameOver = true;
         playSynthSound('player_hit');
@@ -1490,12 +1519,12 @@ function draw() {
         ctx.restore();
     }
 
-    // --- I. VẼ NGƯỜI CHƠI & HIỆU ỨNG LỘ VỊ TRÍ 10S ---
+    // --- I. VẼ NGƯỜI CHƠI & RADAR LỘ VỊ TRÍ 5S ---
     ctx.save();
     ctx.translate(pX, pY);
 
     if (player.revealTimer > 0) {
-        let pingRadius = 25 + (600 - player.revealTimer) % 35;
+        let pingRadius = 25 + (300 - player.revealTimer) % 35;
         ctx.save();
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
         ctx.lineWidth = 3;
@@ -1569,7 +1598,7 @@ function draw() {
         ctx.restore();
     }
 
-    ctx.restore(); // Phục hồi góc nhìn Camera
+    ctx.restore();
 
     // --- L. HIỆU ỨNG ĐÈN PIN TRONG MÊ CUNG ---
     if (gameState === 'MAZE') {
