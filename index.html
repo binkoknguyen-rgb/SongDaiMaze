@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
-    <!-- Màn hình cấu hình ban đầu -->
+    <!-- Màn hình cấu hình nhân vật ban đầu -->
     <div id="start-modal">
         <div class="menu-box">
             <h1>SÔNG DÀI MAZE</h1>
@@ -34,30 +34,31 @@
         </div>
     </div>
 
-    <!-- Thanh UI trạng thái trên cùng -->
+    <!-- Thanh UI trạng thái trên cùng: Gọn gàng và tối ưu cho Mobile -->
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
                 <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/10</span>
-                <span class="info-badge timer-badge" id="badge-timer">Đổi map: <b id="shift-timer-display">18s</b></span>
+                <span class="info-badge" id="badge-status-mode">Chế độ: <b>Mê Cung</b></span>
             </div>
-            <div class="status-message" id="game-status">Thu thập 10 bài phốt! Cẩn thận bẫy ẩn!</div>
+            <div class="status-message" id="game-status">Thu thập đủ 10 bài phốt để lật ngược tình thế!</div>
         </div>
     </div>
 
-    <!-- Popup giải thích cơ chế trước trận đại chiến Boss -->
+    <!-- Popup giải thích trước trận đại chiến Boss -->
     <div id="boss-intro-modal" class="hidden">
         <div class="modal-content boss-intro-box">
             <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG THỨC TỈNH ⚡</h1>
-            <p class="boss-intro-sub">Mê cung đã sụp đổ! Trường Giang quyết đấu tử thủ!</p>
+            <p class="boss-intro-sub">Mê cung đã sụp đổ! Hãy cùng Cộng đồng mạng hợp lực!</p>
             <div class="boss-rules">
-                <p>🛡️ <b>Cộng đồng mạng (20 người):</b> Cùng bạn chiến đấu! (100 HP, 50 dame, luôn hồi sinh đủ 20 người).</p>
-                <p>⚔️ <b>Bạn:</b> Tăng lên <b>1000 HP</b>, sát thương <b>100 dame</b>. Hãy nhặt dấu <b>[+]</b> xanh để hồi 100 máu.</p>
-                <p>👹 <b>Boss Trường Giang:</b> <b>10.000 HP</b> và sở hữu 3 tuyệt kỹ nguy hiểm:</p>
+                <p>🛡️ <b>Cộng đồng mạng (35 người):</b> Tự động vây hãm Boss (100 HP, 50 dame, luôn hồi sinh sau 5s).</p>
+                <p>⚔️ <b>Bạn:</b> Máu tăng lên <b>1000 HP</b>, sát thương <b>100 dame</b>. Hãy nhặt dấu <b>[+]</b> xanh để hồi <b>500 HP</b>.</p>
+                <p>👹 <b>Boss có 2 Phase (Trường Giang ➔ Mười Khó):</b></p>
                 <ul class="skill-list">
-                    <li>🎯 <i>Vỗ Mặt:</i> Đánh đơn mục tiêu cực thốn (200 dame).</li>
-                    <li>💥 <i>Sóng Gió Thị Phi:</i> Sóng xung kích quét tròn diện rộng (150 dame).</li>
-                    <li>✨ <i>Tẩy Trắng:</i> Bật khiên kháng 50% sát thương và hồi 800 HP.</li>
+                    <li>🎯 <i>Vỗ Mặt:</i> Đánh cận chiến cực thấu.</li>
+                    <li>💥 <i>Sóng Gió Thị Phi:</i> Sóng xung kích quét tròn khi bị vây ráp.</li>
+                    <li>✨ <i>Tẩy Trắng:</i> Hồi phục cực nhiều máu và tạo khiên chắn.</li>
+                    <li>🔥 <i>Phase 2 (Mười Khó):</i> Bổ sung Lướt chém thần tốc, Bão đĩa bay và Hố đen hút lực!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
@@ -67,7 +68,7 @@
     <!-- Canvas vẽ toàn bộ trò chơi -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển (Đã tăng kích cỡ) -->
+    <!-- Nút Joystick điều khiển cho Mobile -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
@@ -78,11 +79,11 @@
     <div id="game-modal" class="hidden">
         <div class="modal-content">
             <h1 id="modal-title">CHIẾN THẮNG TUYỆT ĐỐI!</h1>
-            <p id="modal-desc">Bạn và cộng đồng mạng đã đánh bại trường giang</p>
+            <p id="modal-desc">bạn và cộng đồng mạng đã đánh bại trường giang</p>
             <button id="btn-restart" onclick="restartGame()">Chơi lại</button>
         </div>
     </div>
 
-    <script src="game.js?v=3"></script>
+    <script src="game.js?v=4"></script>
 </body>
 </html>
