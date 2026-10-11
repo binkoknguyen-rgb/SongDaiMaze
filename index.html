@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
     <!-- Màn hình cấu hình nhân vật ban đầu -->
@@ -41,25 +41,24 @@
                 <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/10</span>
                 <span class="info-badge" id="badge-status-mode">Chế độ: <b>Mê Cung</b></span>
             </div>
-            <!-- Dòng chữ đỏ chỉ thông báo qua màn tiếp theo, giữ bí mật về 51vs51 -->
             <div class="status-message" id="game-status">Thu thập đủ 10 bài phốt để qua màn tiếp theo!</div>
         </div>
     </div>
 
-    <!-- Popup giải thích cơ chế trước trận đại chiến Boss -->
+    <!-- Popup giới thiệu trước trận Boss -->
     <div id="boss-intro-modal" class="hidden">
         <div class="modal-content boss-intro-box">
             <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG THỨC TỈNH ⚡</h1>
             <p class="boss-intro-sub">Mê cung đã sụp đổ! Hãy cùng Cộng đồng mạng hợp lực!</p>
             <div class="boss-rules">
-                <p>🛡️ <b>Cộng đồng mạng (50 người):</b> Cùng bạn chiến đấu! (100 HP, 50 dame, luôn hồi sinh sau 30s).</p>
-                <p>⚔️ <b>Bạn:</b> Đạt ngưỡng <b>10.000 HP</b>, sát thương <b>100 dame</b>. Nhặt dấu <b>[+]</b> xanh để hồi <b>500 HP</b>.</p>
+                <p>🛡️ <b>Cộng đồng mạng (50 người):</b> Cùng bạn chiến đấu! (Hồi sinh sau 30s).</p>
+                <p>⚔️ <b>Bạn:</b> Đạt ngưỡng <b>10.000 HP</b>, sở hữu bộ kỹ năng <b>Lướt Thần Tốc</b> và <b>Bão Phẫn Nộ</b>.</p>
                 <p>👹 <b>Phe Boss (Trường Giang + 50 Fan trung thành):</b></p>
                 <ul class="skill-list">
-                    <li>🎯 <i>Vỗ Mặt:</i> Đòn cận chiến cực thấu.</li>
+                    <li>🎯 <i>Vỗ Mặt:</i> Đòn cận chiến cực mạnh.</li>
                     <li>💥 <i>Sóng Gió Thị Phi:</i> Quét sóng diện rộng khi bị vây ép.</li>
-                    <li>✨ <i>Tẩy Trắng:</i> Hồi phục cực nhiều máu và tạo khiên chắn.</li>
-                    <li>🔥 <i>Phase 2 (Mười Khó):</i> Đôi bên cùng tăng lên 180 dame, túi máu hồi 1000 HP, Boss tung đòn lướt chém và hố đen hút lực!</li>
+                    <li>✨ <i>Tẩy Trắng:</i> Bật khiên kháng sát thương và hồi phục máu.</li>
+                    <li>🔥 <i>Phase 2 (Mười Khó):</i> Tăng lên 180 dame, tung đòn lướt chém, bão đĩa bay và hố đen!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
@@ -69,11 +68,23 @@
     <!-- Canvas vẽ toàn bộ trò chơi -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển cho Mobile -->
+    <!-- Nút Joystick điều khiển bên trái -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
+    </div>
+
+    <!-- Cụm nút kỹ năng người chơi bên phải cho Mobile -->
+    <div id="skills-zone">
+        <button id="btn-skill-dash" class="skill-btn" onclick="triggerPlayerDash()">
+            <span>LƯỚT</span>
+            <small id="dash-cd-text">SẴN SÀNG</small>
+        </button>
+        <button id="btn-skill-aoe" class="skill-btn aoe-btn" onclick="triggerPlayerAOE()">
+            <span>BÃO NỘ</span>
+            <small id="aoe-cd-text">SẴN SÀNG</small>
+        </button>
     </div>
 
     <!-- Màn hình kết thúc game -->
@@ -85,6 +96,6 @@
         </div>
     </div>
 
-    <script src="game.js?v=5"></script>
+    <script src="game.js?v=6"></script>
 </body>
 </html>
