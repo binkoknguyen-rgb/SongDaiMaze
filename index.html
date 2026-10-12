@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
     <!-- Màn hình cấu hình nhân vật ban đầu -->
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <!-- Thanh UI trạng thái trên cùng -->
+    <!-- Thanh UI trạng thái trên cùng: Gọn gàng và tối ưu cho Mobile -->
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
@@ -58,7 +58,7 @@
                     <li>🎯 <i>Vỗ Mặt:</i> Đòn cận chiến cực mạnh.</li>
                     <li>💥 <i>Sóng Gió Thị Phi:</i> Quét sóng diện rộng khi bị vây ép.</li>
                     <li>✨ <i>Tẩy Trắng:</i> Bật khiên kháng sát thương và hồi phục máu.</li>
-                    <li>🔥 <i>Phase 2 (Mười Khó):</i> Tăng lên 180 dame, tung đòn lướt chém, bão đĩa bay và hố đen!</li>
+                    <li>🔥 <i>Phase 2 (Mười Khó):</i> Tăng x10 sức mạnh, tung đòn lướt chém, chưởng Ki và Kamehameha!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
@@ -68,14 +68,14 @@
     <!-- Canvas vẽ toàn bộ trò chơi -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển bên trái -->
+    <!-- Nút Joystick điều khiển bên trái cho Mobile -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
     </div>
 
-    <!-- Cụm nút kỹ năng người chơi bên phải cho Mobile -->
+    <!-- Cụm nút kỹ năng Người chơi bên phải cho Mobile -->
     <div id="skills-zone">
         <button id="btn-skill-dash" class="skill-btn" onclick="triggerPlayerDash()">
             <span>LƯỚT</span>
@@ -96,6 +96,6 @@
         </div>
     </div>
 
-    <script src="game.js?v=6"></script>
+    <script src="game.js?v=7"></script>
 </body>
 </html>
