@@ -21,7 +21,7 @@ body, html {
     height: 100vh;
 }
 
-/* Thanh UI trên cùng: Tự thích ứng màn hình điện thoại & tai thỏ */
+/* Thanh UI trạng thái trên cùng: Tối ưu chống che khuất */
 #ui-container {
     position: absolute;
     top: max(10px, env(safe-area-inset-top));
@@ -75,13 +75,13 @@ body, html {
     text-overflow: ellipsis;
 }
 
-/* Joystick Mobile: To hơn, nhạy và hỗ trợ viền an toàn đáy */
+/* Cụm Joystick Mobile bên trái */
 #joystick-zone {
     position: absolute;
     bottom: max(25px, env(safe-area-inset-bottom));
     left: 25px;
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
     z-index: 30;
 }
 
@@ -92,20 +92,76 @@ body, html {
     background: rgba(255, 255, 255, 0.14);
     border: 2px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 #joystick-stick {
     position: absolute;
-    width: 56px;
-    height: 56px;
-    background: rgba(255, 255, 255, 0.82);
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.85);
     border-radius: 50%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Cụm nút kỹ năng Người chơi bên phải cho Mobile */
+#skills-zone {
+    position: absolute;
+    bottom: max(25px, env(safe-area-inset-bottom));
+    right: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 30;
+}
+
+.skill-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    border: 2px solid #38bdf8;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.skill-btn:active {
+    transform: scale(0.92);
+}
+
+.skill-btn span {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.skill-btn small {
+    font-size: 9px;
+    color: #bae6fd;
+    margin-top: 2px;
+}
+
+.aoe-btn {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    border-color: #fef08a;
+}
+
+.aoe-btn small {
+    color: #fef9c3;
+}
+
+.skill-btn.disabled {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+    pointer-events: none;
 }
 
 /* Modals */
