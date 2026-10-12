@@ -118,8 +118,8 @@ body, html {
 }
 
 .skill-btn {
-    width: 62px;
-    height: 62px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: linear-gradient(135deg, #0284c7, #0369a1);
     border: 2px solid #38bdf8;
@@ -129,7 +129,7 @@ body, html {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
     touch-action: manipulation;
 }
 
@@ -151,22 +151,20 @@ body, html {
     pointer-events: none;
 }
 
-.heal-btn {
-    background: linear-gradient(135deg, #059669, #047857);
-    border-color: #34d399;
-}
-
-.heal-btn small {
-    color: #a7f3d0;
-}
-
 .aoe-btn {
-    background: linear-gradient(135deg, #d97706, #b45309);
-    border-color: #fbbf24;
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    border-color: #fef08a;
+}
+.aoe-btn small {
+    color: #fef9c3;
 }
 
-.aoe-btn small {
-    color: #fde68a;
+.heal-btn {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    border-color: #86efac;
+}
+.heal-btn small {
+    color: #dcfce7;
 }
 
 .skill-btn.disabled {
