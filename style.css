@@ -21,7 +21,7 @@ body, html {
     height: 100vh;
 }
 
-/* Thanh UI trạng thái trên cùng: Tối ưu chống che khuất */
+/* Thanh UI trạng thái trên cùng */
 #ui-container {
     position: absolute;
     top: max(10px, env(safe-area-inset-top));
@@ -75,7 +75,7 @@ body, html {
     text-overflow: ellipsis;
 }
 
-/* Cụm Joystick Mobile bên trái */
+/* Joystick Mobile bên trái */
 #joystick-zone {
     position: absolute;
     bottom: max(25px, env(safe-area-inset-bottom));
@@ -106,7 +106,7 @@ body, html {
     pointer-events: none;
 }
 
-/* Cụm nút kỹ năng Người chơi bên phải cho Mobile */
+/* Cụm nút kỹ năng Mobile bên phải */
 #skills-zone {
     position: absolute;
     bottom: max(25px, env(safe-area-inset-bottom));
@@ -118,35 +118,37 @@ body, html {
 }
 
 .skill-btn {
-    width: 64px;
-    height: 64px;
+    width: 66px;
+    height: 66px;
     border-radius: 50%;
     background: linear-gradient(135deg, #0284c7, #0369a1);
-    border: 2px solid #38bdf8;
+    border: 2.5px solid #38bdf8;
     color: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation;
 }
 
 .skill-btn:active {
-    transform: scale(0.92);
+    transform: scale(0.90);
 }
 
 .skill-btn span {
     font-size: 13px;
     font-weight: bold;
     letter-spacing: 0.5px;
+    pointer-events: none;
 }
 
 .skill-btn small {
     font-size: 9px;
     color: #bae6fd;
     margin-top: 2px;
+    pointer-events: none;
 }
 
 .aoe-btn {
