@@ -52,12 +52,12 @@
             <p class="boss-intro-sub">Mê cung đã sụp đổ! Hãy cùng Cộng đồng mạng hợp lực!</p>
             <div class="boss-rules">
                 <p>🛡️ <b>Cộng đồng mạng (50 người):</b> Cùng bạn chiến đấu! (Hồi sinh sau 30s).</p>
-                <p>⚔️ <b>Bộ kỹ năng mới:</b> Sử dụng <b>LƯỚT</b>, <b>HỒI MÁU</b> và <b>BÃO NỘ</b> để sinh tồn.</p>
-                <p>👹 <b>Trận chiến 3 Phase:</b></p>
+                <p>⚔️ <b>Bạn:</b> Sở hữu bộ 3 kỹ năng <b>Lướt</b>, <b>Bão Phẫn Nộ</b> và <b>Hồi Máu</b>.</p>
+                <p>👹 <b>Đại chiến Boss:</b></p>
                 <ul class="skill-list">
-                    <li>🎯 <i>Phase 1:</i> Đại chiến 51 vs 51.</li>
-                    <li>🔥 <i>Phase 2:</i> Boss thức tỉnh Ki Aura x10 sức mạnh, 50 Fan đổi phe thành Đồng minh.</li>
-                    <li>⚔️ <i>Phase 3:</i> Solo 1 vs 1 đỉnh cao không người can thiệp!</li>
+                    <li>🎯 <i>Phase 1:</i> Trường Giang + 50 Fan trung thành.</li>
+                    <li>🔥 <i>Phase 2:</i> Boss thức tỉnh Ki Aura x10 sức mạnh. Gom 10 bài phốt hoặc hạ gục Boss để bước vào Phase 3!</li>
+                    <li>⚡ <i>Phase 3:</i> Đỉnh cao quyết chiến Solo 1 vs 1 không khoan nhượng!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
@@ -74,19 +74,19 @@
         </div>
     </div>
 
-    <!-- Cụm 3 nút kỹ năng Người chơi bên phải (Mặc định ẩn ở Mê Cung) -->
+    <!-- Cụm nút kỹ năng Người chơi bên phải cho Mobile (3 nút: Lướt, Bão Nộ, Hồi Máu) -->
     <div id="skills-zone" class="hidden">
         <button id="btn-skill-dash" class="skill-btn">
             <span>LƯỚT</span>
             <small id="dash-cd-text">SẴN SÀNG</small>
         </button>
-        <button id="btn-skill-heal" class="skill-btn heal-btn">
-            <span>HỒI MÁU</span>
-            <small id="heal-cd-text">SẴN SÀNG</small>
-        </button>
         <button id="btn-skill-aoe" class="skill-btn aoe-btn">
             <span>BÃO NỘ</span>
             <small id="aoe-cd-text">SẴN SÀNG</small>
+        </button>
+        <button id="btn-skill-heal" class="skill-btn heal-btn">
+            <span>HỒI MÁU</span>
+            <small id="heal-cd-text">SẴN SÀNG</small>
         </button>
     </div>
 
@@ -94,7 +94,7 @@
     <div id="game-modal" class="hidden">
         <div class="modal-content">
             <h1 id="modal-title">CHIẾN THẮNG TUYỆT ĐỐI!</h1>
-            <p id="modal-desc">bạn và cộng đồng mạng đã đánh bại trường giang</p>
+            <p id="modal-desc">Bạn đã đánh bại Trường Giang trong trận Solo đỉnh cao!</p>
             <button id="btn-restart" onclick="restartGame()">Chơi lại</button>
         </div>
     </div>
