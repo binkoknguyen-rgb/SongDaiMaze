@@ -1,16 +1,13 @@
 /**
  * TRÒ CHƠI: SÔNG DÀI MAZE
  * File: game.js
- * Cập nhật lớn:
- * 1. Boss Phase 2 hồi máu "Tẩy Trắng" tăng lên 10.000 HP.
- * 2. Nhặt đủ 10 bài phốt Đấu trường -> Người chơi mạnh 100% bằng Boss (100.000 HP, 1.800 Dame) -> Kích hoạt Phase 3 Solo!
- * 3. Hạ gục Boss Phase 2 cũng kích hoạt Phase 3 Solo!
- * 4. Phase 3 Solo 1v1 tuyệt đối: Không còn đồng minh hay fan, va chạm sóng âm DBZ liên tục, có nhạc nền riêng phase3_bgm.mp3.
- * 5. Bỏ cục máu ở Phase 2 -> Người chơi có Skill Hồi Máu riêng (2.500 HP, hồi chiêu 10s).
- * 6. Máy dò trong mê cung dò cả bài phốt, khiên hộ mệnh và điện thoại.
+ * Cập nhật:
+ * 1. Khắc phục triệt để lỗi mất nhạc Phase 3 (Cơ chế tự động fallback thông minh).
+ * 2. Loại bỏ hoàn toàn bong bóng lời thoại / chú thích trên đầu Boss.
+ * 3. Bảo toàn trọn vẹn: Map 81x81, 10 bài phốt mê cung phát sáng, Phase 3 Solo 1v1, kỹ năng người chơi mượt mà.
  */
 
-// ======================= 1. TÀI NGUYÊN HÌNH ẢNH & ÂM THANH =======================
+// ======================= 1. TÀI NGUYÊN HÌNH ẢNH & HỆ THỐNG ÂM THANH DỰ PHÒNG =======================
 const ASSETS = {
     monsterImg: 'assets/monster.jpg',
     bossPhase2Img: 'assets/boss_phase2.jpg',
@@ -18,7 +15,7 @@ const ASSETS = {
     bgmSecondary: 'bgm.mp3',
     bossBgmPrimary: 'assets/boss_bgm.mp3',
     bossBgmSecondary: 'boss_bgm.mp3',
-    phase3BgmPrimary: 'assets/phase3_bgm.mp3', // File nhạc riêng cho màn Solo Phase 3
+    phase3BgmPrimary: 'assets/phase3_bgm.mp3',
     phase3BgmSecondary: 'phase3_bgm.mp3'
 };
 
@@ -28,6 +25,7 @@ monsterImage.src = ASSETS.monsterImg;
 const bossPhase2Image = new Image();
 bossPhase2Image.src = ASSETS.bossPhase2Img;
 
+// Nhạc nền Mê Cung
 let bgmAudio = new Audio(ASSETS.bgmPrimary);
 bgmAudio.loop = true;
 bgmAudio.volume = 0.5;
@@ -38,6 +36,7 @@ bgmAudio.addEventListener('error', () => {
     }
 });
 
+// Nhạc nền Đấu Trường Phase 1 & 2
 let bossBgmAudio = new Audio(ASSETS.bossBgmPrimary);
 bossBgmAudio.loop = true;
 bossBgmAudio.volume = 0.65;
@@ -48,13 +47,23 @@ bossBgmAudio.addEventListener('error', () => {
     }
 });
 
+// Nhạc nền Quyết Chiến Phase 3 Solo (Kèm cơ chế chống mất tiếng)
 let phase3BgmAudio = new Audio(ASSETS.phase3BgmPrimary);
 phase3BgmAudio.loop = true;
 phase3BgmAudio.volume = 0.75;
+
 phase3BgmAudio.addEventListener('error', () => {
     if (phase3BgmAudio.src.includes('assets/phase3_bgm.mp3')) {
+        // Thử tìm tại thư mục gốc
         phase3BgmAudio.src = ASSETS.phase3BgmSecondary;
         phase3BgmAudio.load();
+        phase3BgmAudio.play().catch(() => {
+            // Nếu vẫn không có file, tự động phát tiếp nhạc boss_bgm để không bao giờ bị mất nhạc!
+            bossBgmAudio.play().catch(() => {});
+        });
+    } else {
+        // Cả 2 đường dẫn đều chưa có file phase3_bgm.mp3 -> Tiếp tục phát boss_bgm
+        bossBgmAudio.play().catch(() => {});
     }
 });
 
@@ -101,12 +110,22 @@ function playBossBGM() {
 
 function playPhase3BGM() {
     try {
-        bgmAudio.pause();
-        bossBgmAudio.pause();
         initAudioContext();
-        phase3BgmAudio.currentTime = 0;
-        phase3BgmAudio.play().catch(() => {});
-    } catch (e) {}
+        bgmAudio.pause();
+        
+        let playPromise = phase3BgmAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Nhạc Phase 3 phát thành công -> Dừng hẳn nhạc cũ
+                bossBgmAudio.pause();
+            }).catch(() => {
+                // Không mở được file Phase 3 -> Giữ nguyên nhạc Boss tiếp tục chạy
+                bossBgmAudio.play().catch(() => {});
+            });
+        }
+    } catch (e) {
+        bossBgmAudio.play().catch(() => {});
+    }
 }
 
 function playSynthSound(type) {
@@ -259,7 +278,7 @@ function generateMaze(cols, rows) {
         }
     }
 
-    // Đục thông khu vực 4x4 góc dưới cùng bên phải cho Trường Giang
+    // Đục thông khu vực 4x4 góc dưới cùng bên phải cho Trường Giang spawn
     for (let r = rows - 6; r <= rows - 2; r++) {
         for (let c = cols - 6; c <= cols - 2; c++) {
             grid[r][c] = 0;
@@ -383,18 +402,17 @@ let player = {
     hasDetector: false,
     arenaPapersCollected: 0,
 
-    // KỸ NĂNG NGƯỜI CHƠI
     dashCooldown: 0,
     isDashing: false,
     dashTimer: 0,
     dashDx: 0,
     dashDy: 0,
     aoeCooldown: 0,
-    healCooldown: 0 // Hồi chiêu kỹ năng Hồi Máu (10s = 600 frames)
+    healCooldown: 0
 };
 
 let monster = {
-    phase: 1, // 1: Cơ bản, 2: Ki Aura x10, 3: Quyết Chiến Solo 1v1
+    phase: 1,
     name: 'Trường Giang',
     x: 0,
     y: 0,
@@ -453,7 +471,7 @@ let allyRespawnQueue = [];
 let fans = [];
 let fanRespawnQueue = [];
 
-const RESPAWN_DELAY_FRAMES = 1800; // 30 GIÂY
+const RESPAWN_DELAY_FRAMES = 1800;
 
 let mazeItems = [];
 let mazeHelpers = [];
@@ -483,7 +501,6 @@ window.addEventListener('mousemove', (e) => {
 });
 window.addEventListener('mouseup', () => { input.isMouseDown = false; });
 
-// Phím tắt PC: Space = Lướt, E/Q = Bão Nộ, R = Hồi Máu
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         triggerPlayerDash();
@@ -499,7 +516,7 @@ function triggerPlayerDash() {
     if (player.dashCooldown <= 0 && !player.isDashing && isPlaying && !isGameOver && !isVictory) {
         player.isDashing = true;
         player.dashTimer = 14;
-        player.dashCooldown = 240; // 4s hồi chiêu
+        player.dashCooldown = 240;
         player.invulnerableTimer = 22;
 
         if (input.dx !== 0 || input.dy !== 0) {
@@ -517,7 +534,7 @@ function triggerPlayerDash() {
 function triggerPlayerAOE() {
     if (gameState !== 'ARENA') return;
     if (player.aoeCooldown <= 0 && isPlaying && !isGameOver && !isVictory) {
-        player.aoeCooldown = 480; // 8s hồi chiêu
+        player.aoeCooldown = 480;
         playSynthSound('player_aoe');
         screenShake = 24;
 
@@ -550,11 +567,10 @@ function triggerPlayerAOE() {
     }
 }
 
-// KỸ NĂNG HỒI MÁU RIÊNG CHO NGƯỜI CHƠI (Hồi 2.500 HP, hồi chiêu 10s)
 function triggerPlayerHeal() {
     if (gameState !== 'ARENA') return;
     if (player.healCooldown <= 0 && isPlaying && !isGameOver && !isVictory) {
-        player.healCooldown = 600; // 10s hồi chiêu
+        player.healCooldown = 600;
         player.hp = Math.min(player.maxHp, player.hp + 2500);
         playSynthSound('heal');
         notification.text = `💚 TỰ HỒI MÁU +2500 HP! HIỆN CÓ: ${Math.floor(player.hp)}/${player.maxHp}`;
@@ -572,7 +588,6 @@ function triggerPlayerHeal() {
     }
 }
 
-// Gắn sự kiện cảm ứng đa điểm cho 3 nút kỹ năng Mobile
 const btnDash = document.getElementById('btn-skill-dash');
 const btnAOE = document.getElementById('btn-skill-aoe');
 const btnHeal = document.getElementById('btn-skill-heal');
@@ -771,9 +786,6 @@ function updateMonsterVisionArea() {
 
             if (Math.abs(angleDiff) <= monster.fov / 2) {
                 if (hasLineOfSight(monster.x, monster.y, player.x, player.y)) {
-                    if (!monster.isChasing) {
-                        triggerMonsterSpeak(`${player.name} ơi, anh thấy em rồi!`, 140);
-                    }
                     monster.isChasing = true;
                 }
             }
@@ -894,10 +906,8 @@ function addHitVisual(x, y, isPlayer, customText = null, customColor = null) {
     }
 }
 
-function triggerMonsterSpeak(text, duration = 160) {
-    monster.speechText = text;
-    monster.speechTimer = duration;
-}
+// Hàm làm rỗng (Đã loại bỏ toàn bộ chú thích trên đầu Boss)
+function triggerMonsterSpeak(text, duration = 160) {}
 
 // ======================= 8. KHỞI TẠO GAME =======================
 function initGame() {
@@ -998,7 +1008,7 @@ function initGame() {
     isGameOver = false;
     isVictory = false;
 
-    // Reset giao diện: Ẩn cụm nút kỹ năng trong Mê Cung
+    // Ẩn cụm nút kỹ năng trong Mê Cung
     let skillsZone = document.getElementById('skills-zone');
     if (skillsZone) skillsZone.classList.add('hidden');
 
@@ -1032,7 +1042,7 @@ function startBossBattle() {
 
     playBossBGM();
 
-    // Hiện cụm nút kỹ năng
+    // Hiện cụm nút kỹ năng trong Đấu Trường
     let skillsZone = document.getElementById('skills-zone');
     if (skillsZone) skillsZone.classList.remove('hidden');
 
@@ -1048,7 +1058,6 @@ function startBossBattle() {
         spawnSingleFan();
     }
 
-    // Ở Phase 1 vẫn có 4 túi máu hỗ trợ
     for (let i = 0; i < 4; i++) {
         spawnMedkit();
     }
@@ -1065,11 +1074,10 @@ function startBossBattle() {
         statusEl.style.color = '#eab308';
     }
 
-    triggerMonsterSpeak(`50 Fan của tao đâu, tiễu trừ bọn chúng!`, 180);
     playSynthSound('boss_skill');
 }
 
-// HÀM CHUYỂN GIAO SANG PHASE 3: SOLO 1 VS 1 TUYỆT ĐỐI
+// CHUYỂN GIAO SANG PHASE 3 SOLO 1V1
 function triggerPhase3Solo() {
     monster.phase = 3;
     monster.name = 'Mười Khó (Bản Năng Vô Cực)';
@@ -1079,12 +1087,11 @@ function triggerPhase3Solo() {
     monster.speed = 6.2;
     monster.hasKiAura = true;
 
-    // Người chơi đạt cảnh giới tối thượng ngang bằng Boss
     player.maxHp = 100000;
     player.hp = 100000;
     player.damage = 1800;
 
-    // GIẢI TÁN TOÀN BỘ QUÂN ĐOÀN (SOLO 1V1)
+    // Giải tán toàn bộ quân đoàn
     allies = [];
     fans = [];
     allyRespawnQueue = [];
@@ -1092,12 +1099,11 @@ function triggerPhase3Solo() {
     medkits = [];
     arenaPapers = [];
 
-    // Chuyển nhạc nền Phase 3
+    // Chuyển sang nhạc nền Phase 3
     playPhase3BGM();
 
     screenShake = 60;
     playSynthSound('phase_change');
-    triggerMonsterSpeak(`PHASE 3: CHỈ CÒN TA VÀ MÀY! SOLO 1 VS 1 ĐỈNH CAO!`, 240);
 
     notification.text = '⚡ BƯỚC VÀO PHASE 3: SOLO 1 VS 1 TỐI THƯỢNG! SỨC MẠNH CÂN BẰNG 100.000 HP & 1.800 DAME!';
     notification.timer = 280;
@@ -1323,6 +1329,7 @@ function update() {
                 }
             }
 
+            // Đồng minh nhặt phốt -> Đồng minh bị lộ 5s
             for (let i = papers.length - 1; i >= 0; i--) {
                 let p = papers[i];
                 if (Math.hypot(helper.x - p.x, helper.y - p.y) < helper.radius + 18) {
@@ -1354,7 +1361,6 @@ function update() {
             if (Math.hypot(monster.x - helper.x, monster.y - helper.y) < monster.radius + helper.radius) {
                 mazeHelpers.splice(hIdx, 1);
                 playSynthSound('player_hit');
-                triggerMonsterSpeak(`Bắt được một đứa bóc phốt tao rồi!`, 130);
                 continue;
             }
         }
@@ -1376,7 +1382,6 @@ function update() {
                     player.revealTimer = 300;
                     notification.text = `⚠️ BẠN BỊ LỘ VỊ TRÍ 5 GIÂY! TỐC ĐỘ QUÁI: ${monster.speed.toFixed(1)}!`;
                     notification.timer = 150;
-                    triggerMonsterSpeak(`Anh thấy em rồi ${player.name}, đừng hòng trốn!`, 130);
                 } else {
                     gameState = 'BOSS_POPUP';
                     let introEl = document.getElementById('boss-intro-modal');
@@ -1400,15 +1405,15 @@ function update() {
                     monster.currentPath = [];
                     monster.patrolTarget = null;
                     monster.lostSightTimer = 0;
-                    triggerMonsterSpeak(`Ủa, cắt đuôi lẹ dữ vậy?!`, 120);
                 }
             }
         }
 
+        // Khiên hộ mệnh cứu mạng
         if (monster.stunTimer <= 0 && distToPlayer < player.radius + monster.radius) {
             if (player.shields > 0) {
                 player.shields--;
-                monster.stunTimer = 300;
+                monster.stunTimer = 300; // Stun 5s
                 monster.isChasing = false;
                 monster.currentPath = [];
                 screenShake = 25;
@@ -1420,7 +1425,6 @@ function update() {
                 monster.x += (pushDx / pushDist) * 55;
                 monster.y += (pushDy / pushDist) * 55;
 
-                triggerMonsterSpeak(`Á á, hoa mắt quá! Choáng rồi!`, 180);
                 notification.text = `🛡️ KHIÊN HỘ MỆNH KÍCH HOẠT! TRƯỜNG GIANG BỊ CHOÁNG 5 GIÂY!`;
                 notification.timer = 180;
             } else {
@@ -1433,6 +1437,7 @@ function update() {
 
         updateMonsterVisionArea();
 
+        // Di chuyển của quái trong mê cung
         if (monster.stunTimer <= 0) {
             let mCol = Math.floor(monster.x / TILE_SIZE);
             let mRow = Math.floor(monster.y / TILE_SIZE);
@@ -1501,7 +1506,6 @@ function update() {
     }
 
     // --- C. LOGIC GIAI ĐOẠN 2 & 3: ĐẤU TRƯỜNG ---
-    // 1. Hồi sinh đồng minh & fan (Chỉ ở Phase 1 & 2)
     if (monster.phase < 3) {
         for (let i = allyRespawnQueue.length - 1; i >= 0; i--) {
             allyRespawnQueue[i]--;
@@ -1523,7 +1527,7 @@ function update() {
         }
     }
 
-    // Ở Phase 1: Thả túi máu. TỪ PHASE 2 & 3: KHÔNG CÒN CỤC MÁU RƠI
+    // Chỉ có cục máu rơi ở Phase 1. Từ Phase 2 & 3: Không còn cục máu rơi!
     if (monster.phase === 1) {
         medkitSpawnTimer++;
         if (medkitSpawnTimer > 350 && medkits.length < 5) {
@@ -1539,10 +1543,10 @@ function update() {
             }
         }
     } else {
-        medkits = []; // Xóa sổ cục máu ở Phase 2 và 3
+        medkits = [];
     }
 
-    // 2. NHẶT 10 BÀI PHỐT ĐẤU TRƯỜNG Ở PHASE 2 (NHẶT HẾT -> BẰNG SỨC MẠNH VÀ KÍCH HOẠT PHASE 3!)
+    // Nhặt 10 bài phốt Đấu trường ở Phase 2
     if (monster.phase === 2) {
         for (let i = arenaPapers.length - 1; i >= 0; i--) {
             let ap = arenaPapers[i];
@@ -1551,7 +1555,6 @@ function update() {
                 player.arenaPapersCollected++;
                 playSynthSound('collect');
 
-                // Tăng lũy tiến sức mạnh
                 player.maxHp = 10000 + (player.arenaPapersCollected / 10) * 90000;
                 player.damage = 180 + (player.arenaPapersCollected / 10) * 1620;
                 player.hp = Math.min(player.maxHp, player.hp + 9000);
@@ -1559,7 +1562,7 @@ function update() {
                 notification.text = `⚡ BÀI PHỐT (${player.arenaPapersCollected}/10)! SỨC MẠNH: ${Math.floor(player.damage)} DAME, MÁU: ${Math.floor(player.maxHp)} HP!`;
                 notification.timer = 150;
 
-                // NHẶT ĐỦ 10 BÀI PHỐT -> ĐẠT 100% SỨC MẠNH BOSS VÀ CHUYỂN SANG PHASE 3 SOLO!
+                // NHẶT ĐỦ 10 BÀI PHỐT -> ĐẠT 100% SỨC MẠNH BOSS VÀ KÍCH HOẠT PHASE 3 SOLO!
                 if (player.arenaPapersCollected >= 10) {
                     triggerPhase3Solo();
                     return;
@@ -1568,7 +1571,7 @@ function update() {
         }
     }
 
-    // 3. ĐỒNG MINH TẤN CÔNG (CHỈ Ở PHASE 1 & 2)
+    // Đồng minh tấn công (Phase 1 & 2)
     if (monster.phase < 3) {
         for (let i = allies.length - 1; i >= 0; i--) {
             let ally = allies[i];
@@ -1655,7 +1658,7 @@ function update() {
         if (proj.life <= 0) allyProjectiles.splice(i, 1);
     }
 
-    // 4. Fan trung thành tấn công (Phase 1)
+    // Fan trung thành tấn công (Phase 1)
     if (monster.phase === 1) {
         for (let i = fans.length - 1; i >= 0; i--) {
             let fan = fans[i];
@@ -1698,7 +1701,7 @@ function update() {
         }
     }
 
-    // 5. NGƯỜI CHƠI TẤN CÔNG THƯỜNG
+    // Người chơi tấn công thường
     if (player.attackCooldown <= 0) {
         let distPtoM = Math.hypot(player.x - monster.x, player.y - monster.y);
         if (distPtoM <= player.radius + monster.radius + 8) {
@@ -1709,7 +1712,6 @@ function update() {
             addHitVisual(monster.x, monster.y, true);
             playSynthSound('player_hit');
 
-            // Kích hoạt va chạm sóng âm DBZ ở Phase 3 hoặc khi >= 5 bài phốt
             if (player.arenaPapersCollected >= 5 || monster.phase === 3) {
                 triggerDBZClash((player.x + monster.x) / 2, (player.y + monster.y) / 2);
             }
@@ -1728,8 +1730,7 @@ function update() {
         }
     }
 
-    // 6. CHUYỂN PHASE
-    // Phase 1 hạ gục -> Vào Phase 2 (x10 Ki Aura, 50 fan đổi phe)
+    // Chuyển giao Phase 2
     if (monster.phase === 1 && monster.hp <= 0) {
         monster.phase = 2;
         monster.name = 'Mười Khó (Thức Tỉnh Ki)';
@@ -1760,7 +1761,6 @@ function update() {
 
         screenShake = 55;
         playSynthSound('phase_change');
-        triggerMonsterSpeak(`LỘ BỘ MẶT THẬT! NĂNG LƯỢNG SIÊU SAIYAN KHAI MỞ!`, 220);
 
         notification.text = '🔥 PHASE 2: TRƯỜNG GIANG X10 SỨC MẠNH (100.000 HP, 1.800 DAME)! 50 FAN ĐỔI PHE! DÙNG SKILL HỒI MÁU!';
         notification.timer = 260;
@@ -1777,7 +1777,7 @@ function update() {
         return;
     }
 
-    // 7. BỘ KỸ NĂNG VÀ AI CỦA BOSS (PHASE 2 & PHASE 3)
+    // AI và kỹ năng Boss
     let primaryTarget = player;
     let minBossTgtDist = Math.hypot(player.x - monster.x, player.y - monster.y);
     let nearbyEnemies = minBossTgtDist < 180 ? 1 : 0;
@@ -1837,26 +1837,24 @@ function update() {
         }
     }
 
-    // SKILL TẨY TRẮNG: PHASE 2 HỒI MÁU NÂNG LÊN 10.000 HP!
+    // KỸ NĂNG TẨY TRẮNG: PHASE 2 & 3 HỒI MÁU NÂNG LÊN 10.000 HP!
     monster.skill3Cooldown--;
     if (monster.hp < monster.maxHp * 0.7 && monster.skill3Cooldown <= 0) {
         monster.skill3Cooldown = 750;
         monster.isShielded = true;
         monster.shieldTimer = 240;
-        let healAmt = monster.phase >= 2 ? 10000 : 1000; // NÂNG MẠNH LÊN 10.000 HP
+        let healAmt = monster.phase >= 2 ? 10000 : 1000; // Hồi 10.000 HP
         monster.hp = Math.min(monster.maxHp, monster.hp + healAmt);
         playSynthSound('heal');
-        triggerMonsterSpeak(monster.phase >= 2 ? `Tẩy Trắng Siêu Cấp Hồi Phục 10.000 HP!` : `Anh Tẩy Trắng một chút thôi!`, 130);
     }
 
-    // SKILL SÓNG GIÓ THỊ PHI
+    // KỸ NĂNG SÓNG GIÓ THỊ PHI
     monster.skill2Cooldown--;
     if ((nearbyEnemies >= 4 || Math.hypot(player.x - monster.x, player.y - monster.y) < 130) && monster.skill2Cooldown <= 0) {
         monster.skill2Cooldown = 520;
         monster.shockwaveActive = true;
         monster.shockwaveRadius = 10;
         playSynthSound('boss_skill');
-        triggerMonsterSpeak(`Đại Sóng Gió Quét Sạch!`, 110);
     }
 
     if (monster.shockwaveActive) {
@@ -1881,7 +1879,7 @@ function update() {
         if (monster.shockwaveRadius > maxWave) monster.shockwaveActive = false;
     }
 
-    // SKILL VỖ MẶT
+    // KỸ NĂNG VỖ MẶT
     monster.skill1Cooldown--;
     if (primaryTarget && Math.hypot(primaryTarget.x - monster.x, primaryTarget.y - monster.y) < 180 && monster.skill1Cooldown <= 0) {
         monster.skill1Cooldown = 300;
@@ -1898,7 +1896,6 @@ function update() {
         }
         screenShake = 24;
         playSynthSound('boss_skill');
-        triggerMonsterSpeak(monster.phase >= 2 ? `Mười Khó Vỗ Mặt Hủy Diệt!` : `Nhận lấy cú vỗ mặt này!`, 90);
     }
     if (monster.singleStrikeTimer > 0) monster.singleStrikeTimer--;
 
@@ -1916,7 +1913,6 @@ function update() {
             monster.angle = Math.atan2(primaryTarget.y - monster.y, primaryTarget.x - monster.x);
 
             hitEffects.push({ x: monster.x, y: monster.y, radius: 10, maxRadius: 70, lineWidth: 5, color: '#38bdf8', alpha: 1.0 });
-            triggerMonsterSpeak(`Dịch Chuyển Tức Thời! Sau lưng mày!`, 100);
         }
 
         // 2. Chưởng Ki liên hoàn
@@ -1924,7 +1920,6 @@ function update() {
         if (monster.kiBlastCooldown <= 0 && primaryTarget) {
             monster.kiBlastCooldown = 280;
             playSynthSound('boss_skill');
-            triggerMonsterSpeak(`Nhận lấy mưa Chưởng Ki!`, 90);
 
             let baseA = Math.atan2(primaryTarget.y - monster.y, primaryTarget.x - monster.x);
             for (let i = -2; i <= 2; i++) {
@@ -1947,7 +1942,6 @@ function update() {
             monster.kamehamehaCooldown = 560;
             monster.kameChargingTimer = 60;
             monster.kameAngle = Math.atan2(primaryTarget.y - monster.y, primaryTarget.x - monster.x);
-            triggerMonsterSpeak(`KAME... HAME...`, 70);
         }
 
         if (monster.kameChargingTimer > 0) {
@@ -1956,7 +1950,6 @@ function update() {
                 monster.kameBeamTimer = 50;
                 playSynthSound('kamehameha');
                 screenShake = 35;
-                triggerMonsterSpeak(`... HAAAAAAA! 🔥`, 90);
             }
         }
 
@@ -2059,7 +2052,6 @@ function update() {
         return;
     }
 
-    // KẾT THÚC CHIẾN THẮNG TUYỆT ĐỐI (KHI HẠ GỤC XONG PHASE 3 SOLO)
     if (monster.phase === 3 && monster.hp <= 0) {
         isVictory = true;
         playSynthSound('win');
@@ -2069,7 +2061,7 @@ function update() {
     }
 }
 
-// ======================= 10. VẼ ĐỒ HỌA & MŨI TÊN MÁY DÒ TOÀN NĂNG =======================
+// ======================= 10. VẼ ĐỒ HỌA (LOẠI BỎ TOÀN BỘ CHÚ THÍCH CỦA BOSS) =======================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!isPlaying) return;
@@ -2114,7 +2106,7 @@ function draw() {
         }
     }
 
-    // --- B. VẼ 10 BÀI PHỐT TRONG MÊ CUNG ---
+    // --- B. VẼ 10 BÀI PHỐT MÊ CUNG ---
     if (gameState === 'MAZE') {
         let floatVal = Math.sin(Date.now() / 160) * 4;
         for (let p of papers) {
@@ -2406,7 +2398,7 @@ function draw() {
         }
     }
 
-    // --- M. VẼ QUÁI VẬT & KI AURA ---
+    // --- M. VẼ QUÁI VẬT & KI AURA (ĐÃ LOẠI BỎ TOÀN BỘ CHÚ THÍCH/LỜI THOẠI) ---
     if (monster.hasKiAura) {
         ctx.save();
         let auraR = monster.radius + 18 + Math.sin(Date.now() / 60) * 4;
@@ -2461,37 +2453,6 @@ function draw() {
     ctx.textAlign = 'center';
     ctx.fillStyle = monster.phase >= 2 ? '#facc15' : '#f87171';
     ctx.fillText(monster.name, mX, mY + monster.radius + 16);
-
-    // Lời thoại Boss
-    if (monster.speechTimer > 0 && monster.speechText) {
-        ctx.save();
-        ctx.font = 'bold 13px -apple-system, sans-serif';
-        let textMetrics = ctx.measureText(monster.speechText);
-        let boxW = textMetrics.width + 24;
-        let boxH = 28;
-        let boxX = mX - boxW / 2;
-        let boxY = mY - monster.radius - (gameState === 'ARENA' ? 44 : 32);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-        ctx.beginPath();
-        ctx.moveTo(mX - 6, boxY + boxH);
-        ctx.lineTo(mX, boxY + boxH + 6);
-        ctx.lineTo(mX + 6, boxY + boxH);
-        ctx.closePath();
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#b91c1c';
-        ctx.textAlign = 'center';
-        ctx.fillText(monster.speechText, mX, boxY + 18);
-        ctx.restore();
-    }
 
     // --- N. VẼ NGƯỜI CHƠI ---
     ctx.save();
@@ -2553,7 +2514,6 @@ function draw() {
 
     // --- P. MÁY DÒ TOÀN NĂNG (DÒ BÀI PHỐT & VẬT PHẨM MÊ CUNG) ---
     if (gameState === 'MAZE' && player.hasDetector) {
-        // Gom toàn bộ mục tiêu cần dò: Bài phốt + Vật phẩm (Khiên, Điện thoại)
         let targetsToDetect = [];
         for (let p of papers) targetsToDetect.push({ x: p.x, y: p.y, type: 'paper' });
         for (let it of mazeItems) targetsToDetect.push({ x: it.x, y: it.y, type: it.type });
@@ -2581,7 +2541,6 @@ function draw() {
                 ctx.translate(arrowX, arrowY);
                 ctx.rotate(angleToT);
 
-                // Màu mũi tên: Bài phốt (Vàng), Khiên (Xanh dương), Điện thoại (Tím)
                 let arrowColor = '#f59e0b';
                 if (t.type === 'shield') arrowColor = '#38bdf8';
                 else if (t.type === 'phone') arrowColor = '#c084fc';
@@ -2675,7 +2634,7 @@ function draw() {
         ctx.restore();
     }
 
-    ctx.restore();
+    ctx.restore(); // Phục hồi Camera
 
     // --- R. ÁNH SÁNG ĐÈN PIN MÊ CUNG ---
     if (gameState === 'MAZE') {
