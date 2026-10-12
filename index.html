@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
     <!-- Màn hình cấu hình nhân vật ban đầu -->
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <!-- Thanh UI trạng thái trên cùng: Gọn gàng và tối ưu cho Mobile -->
+    <!-- Thanh UI trạng thái trên cùng -->
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
@@ -52,7 +52,7 @@
             <p class="boss-intro-sub">Mê cung đã sụp đổ! Hãy cùng Cộng đồng mạng hợp lực!</p>
             <div class="boss-rules">
                 <p>🛡️ <b>Cộng đồng mạng (50 người):</b> Cùng bạn chiến đấu! (Hồi sinh sau 30s).</p>
-                <p>⚔️ <b>Bạn:</b> Đạt ngưỡng <b>10.000 HP</b>, sở hữu bộ kỹ năng <b>Lướt Thần Tốc</b> và <b>Bão Phẫn Nộ</b>.</p>
+                <p>⚔️ <b>Bạn:</b> Đạt ngưỡng <b>10.000 HP</b>, mở khóa kỹ năng <b>Lướt Thần Tốc</b> và <b>Bão Phẫn Nộ</b>.</p>
                 <p>👹 <b>Phe Boss (Trường Giang + 50 Fan trung thành):</b></p>
                 <ul class="skill-list">
                     <li>🎯 <i>Vỗ Mặt:</i> Đòn cận chiến cực mạnh.</li>
@@ -68,20 +68,20 @@
     <!-- Canvas vẽ toàn bộ trò chơi -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển bên trái cho Mobile -->
+    <!-- Cần Joystick Mobile bên trái -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
     </div>
 
-    <!-- Cụm nút kỹ năng Người chơi bên phải cho Mobile -->
-    <div id="skills-zone">
-        <button id="btn-skill-dash" class="skill-btn" onclick="triggerPlayerDash()">
+    <!-- Cụm nút kỹ năng bên phải: MẶC ĐỊNH ẨN Ở MÊ CUNG, CHỈ HIỆN Ở ĐẤU TRƯỜNG -->
+    <div id="skills-zone" class="hidden">
+        <button id="btn-skill-dash" class="skill-btn">
             <span>LƯỚT</span>
             <small id="dash-cd-text">SẴN SÀNG</small>
         </button>
-        <button id="btn-skill-aoe" class="skill-btn aoe-btn" onclick="triggerPlayerAOE()">
+        <button id="btn-skill-aoe" class="skill-btn aoe-btn">
             <span>BÃO NỘ</span>
             <small id="aoe-cd-text">SẴN SÀNG</small>
         </button>
@@ -96,6 +96,6 @@
         </div>
     </div>
 
-    <script src="game.js?v=7"></script>
+    <script src="game.js?v=8"></script>
 </body>
 </html>
