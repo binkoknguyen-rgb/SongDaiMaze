@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sông Dài Maze</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <title>Sông Dài Maze - Dark Deception Edition</title>
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
-    <!-- Màn hình cấu hình nhân vật ban đầu -->
+    <!-- Màn hình cấu hình ban đầu -->
     <div id="start-modal">
         <div class="menu-box">
             <h1>SÔNG DÀI MAZE</h1>
-            <p class="subtitle">Thiết lập nhân vật của bạn trước khi bước vào mê cung</p>
+            <p class="subtitle">Ác mộng mê cung kinh dị & Đại chiến đấu trường</p>
 
             <div class="form-group">
                 <label for="player-name-input">Tên người chơi:</label>
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <button id="btn-start" onclick="onStartGameClicked()">BẮT ĐẦU VÀO MÊ CUNG</button>
+            <button id="btn-start" onclick="onStartGameClicked()">BƯỚC VÀO ÁC MỘNG</button>
         </div>
     </div>
 
@@ -38,10 +38,10 @@
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
-                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/10</span>
+                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/30</span>
                 <span class="info-badge" id="badge-status-mode">Chế độ: <b>Mê Cung</b></span>
             </div>
-            <div class="status-message" id="game-status">Thu thập đủ 10 bài phốt để qua màn tiếp theo!</div>
+            <div class="status-message" id="game-status">Thu thập đủ 30 bài phốt để qua màn tiếp theo!</div>
         </div>
     </div>
 
@@ -49,31 +49,31 @@
     <div id="boss-intro-modal" class="hidden">
         <div class="modal-content boss-intro-box">
             <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG THỨC TỈNH ⚡</h1>
-            <p class="boss-intro-sub">Mê cung đã sụp đổ! Hãy cùng Cộng đồng mạng hợp lực!</p>
+            <p class="boss-intro-sub">Mê cung đã thu hẹp lại thành tử địa giao tranh!</p>
             <div class="boss-rules">
-                <p>🛡️ <b>Cộng đồng mạng (50 người):</b> Cùng bạn chiến đấu! (Hồi sinh sau 30s).</p>
-                <p>⚔️ <b>Bạn:</b> Sở hữu bộ 3 kỹ năng <b>Lướt</b>, <b>Bão Phẫn Nộ</b> và <b>Hồi Máu</b>.</p>
-                <p>👹 <b>Đại chiến Boss 2 Phase:</b></p>
+                <p>🛡️ <b>Đồng minh:</b> 50 người cùng bạn chiến đấu trong không gian nghẹt thở.</p>
+                <p>⚔️ <b>Kỹ năng:</b> Dùng <b>LƯỚT</b>, <b>BÃO NỘ</b> và <b>HỒI MÁU</b> để sinh tồn.</p>
+                <p>👹 <b>Đại chiến Boss:</b></p>
                 <ul class="skill-list">
                     <li>🎯 <i>Phase 1:</i> Trường Giang + 50 Fan trung thành.</li>
-                    <li>🔥 <i>Phase 2:</i> Mười Khó thức tỉnh Ki Aura x10 sức mạnh. Thu thập 10 bài phốt đấu trường để đạt 100% cảnh giới và giành chiến thắng tuyệt đối!</li>
+                    <li>🔥 <i>Phase 2:</i> Mười Khó thức tỉnh Ki Aura x10 sức mạnh. Nhặt đủ 10 bài phốt đấu trường để đạt 100% cảnh giới và hạ gục Boss!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
         </div>
     </div>
 
-    <!-- Canvas vẽ toàn bộ trò chơi -->
+    <!-- Canvas vẽ toàn bộ trò chơi (Bao gồm cả Mini-map) -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Nút Joystick điều khiển bên trái cho Mobile -->
+    <!-- Cần Joystick Mobile bên trái -->
     <div id="joystick-zone">
         <div id="joystick-base">
             <div id="joystick-stick"></div>
         </div>
     </div>
 
-    <!-- Cụm nút kỹ năng Người chơi bên phải cho Mobile (3 nút: Lướt, Bão Nộ, Hồi Máu) -->
+    <!-- Cụm nút kỹ năng bên phải: Chỉ hiện ở Đấu Trường -->
     <div id="skills-zone" class="hidden">
         <button id="btn-skill-dash" class="skill-btn">
             <span>LƯỚT</span>
@@ -93,11 +93,11 @@
     <div id="game-modal" class="hidden">
         <div class="modal-content">
             <h1 id="modal-title">CHIẾN THẮNG TUYỆT ĐỐI!</h1>
-            <p id="modal-desc">Bạn đã đánh bại Trường Giang trong trận Solo đỉnh cao!</p>
+            <p id="modal-desc">Bạn và cộng đồng mạng đã đánh bại trường giang!</p>
             <button id="btn-restart" onclick="restartGame()">Chơi lại</button>
         </div>
     </div>
 
-    <script src="game.js?v=9"></script>
+    <script src="game.js?v=10"></script>
 </body>
 </html>
