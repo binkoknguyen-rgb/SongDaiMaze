@@ -11,7 +11,7 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #06090e;
+    background-color: #03060a;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -29,14 +29,14 @@ body, html {
     transform: translateX(-50%);
     width: calc(100% - 24px);
     max-width: 440px;
-    background: rgba(15, 23, 42, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 15, 29, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 12px;
     padding: 8px 12px;
     color: #fff;
     pointer-events: none;
     z-index: 30;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
 }
 
 #status-bar {
@@ -89,7 +89,7 @@ body, html {
     position: relative;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.12);
     border: 2px solid rgba(255, 255, 255, 0.35);
     border-radius: 50%;
 }
@@ -180,7 +180,7 @@ body, html {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(circle, rgba(16, 24, 38, 0.96) 0%, rgba(5, 8, 13, 0.98) 100%);
+    background: radial-gradient(circle, rgba(14, 20, 32, 0.96) 0%, rgba(3, 5, 10, 0.98) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -189,7 +189,7 @@ body, html {
 }
 
 .menu-box, .modal-content {
-    background: rgba(23, 32, 48, 0.95);
+    background: rgba(20, 27, 42, 0.96);
     border: 1.5px solid #334155;
     border-radius: 14px;
     padding: 24px 20px;
@@ -197,7 +197,7 @@ body, html {
     max-width: 400px;
     text-align: center;
     color: #fff;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 .boss-intro-box {
