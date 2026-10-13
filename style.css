@@ -106,7 +106,25 @@ body, html {
     pointer-events: none;
 }
 
-/* Cụm 3 nút kỹ năng Mobile bên phải */
+/* Nút kỹ năng Phân Thân trong Mê Cung */
+#maze-skills-zone {
+    position: absolute;
+    bottom: max(25px, env(safe-area-inset-bottom));
+    right: 25px;
+    z-index: 30;
+}
+
+.clone-btn {
+    width: 72px !important;
+    height: 72px !important;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    border-color: #c4b5fd !important;
+}
+.clone-btn small {
+    color: #ede9fe !important;
+}
+
+/* Cụm nút kỹ năng Đấu Trường */
 #skills-zone {
     position: absolute;
     bottom: max(20px, env(safe-area-inset-bottom));
@@ -118,8 +136,8 @@ body, html {
 }
 
 .skill-btn {
-    width: 60px;
-    height: 60px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
     background: linear-gradient(135deg, #0284c7, #0369a1);
     border: 2px solid #38bdf8;
