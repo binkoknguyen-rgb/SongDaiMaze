@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sông Dài Maze - Dark Deception Edition</title>
-    <link rel="stylesheet" href="style.css?v=13">
+    <title>Sông Dài Maze - 4 Levels Dark Deception</title>
+    <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
     <!-- Màn hình cấu hình ban đầu -->
     <div id="start-modal">
         <div class="menu-box">
             <h1>SÔNG DÀI MAZE</h1>
-            <p class="subtitle">Ác mộng mê cung kinh dị & Đại chiến đấu trường</p>
+            <p class="subtitle">Vượt qua 4 Tầng Ác Mộng Mê Cung & Đại Chiến Đấu Trường</p>
 
             <div class="form-group">
                 <label for="player-name-input">Tên người chơi:</label>
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <button id="btn-start" onclick="onStartGameClicked()">BƯỚC VÀO ÁC MỘNG</button>
+            <button id="btn-start" onclick="onStartGameClicked()">BẮT ĐẦU LEVEL 1</button>
         </div>
     </div>
 
@@ -38,26 +38,39 @@
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
-                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/50</span>
-                <span class="info-badge" id="badge-status-mode">Chế độ: <b>Mê Cung</b></span>
+                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/10</span>
+                <span class="info-badge" id="badge-level">Mê Cung: <b id="level-display" style="color:#38bdf8">Level 1/4</b></span>
+                <span class="info-badge" id="badge-shield">🛡️ Khiên: <b id="shield-count" style="color:#22c55e">0</b>/3</span>
             </div>
-            <div class="status-message" id="game-status">Thu thập đủ 50 bài phốt để qua màn tiếp theo! (Phím F: Phân Thân)</div>
+            <div class="status-message" id="game-status">Thu thập đủ bài phốt để mở Cổng Thoát Hiểm!</div>
         </div>
     </div>
 
-    <!-- Nút kỹ năng Phân Thân riêng trong Mê Cung trên Mobile -->
+    <!-- Nút kỹ năng Phân Thân trong Mê Cung (Mở khóa từ Level 3) -->
     <div id="maze-skills-zone" class="hidden">
         <button id="btn-skill-clone" class="skill-btn clone-btn">
-            <span>PHÂN THÂN</span>
+            <span id="clone-btn-label">PHÂN THÂN</span>
             <small id="clone-cd-text">SẴN SÀNG</small>
         </button>
     </div>
 
-    <!-- Popup giới thiệu trước trận Boss -->
+    <!-- Popup thông báo qua màn & giới thiệu tính năng mới ở Level tiếp theo -->
+    <div id="level-up-modal" class="hidden">
+        <div class="modal-content boss-intro-box">
+            <h1 class="boss-intro-title" id="level-modal-title">🎉 ĐÃ THOÁT KHỎI LEVEL 1!</h1>
+            <p class="boss-intro-sub" id="level-modal-subtitle">Chuẩn bị bước vào thử thách tiếp theo</p>
+            <div class="boss-rules" id="level-modal-features">
+                <!-- Nội dung điểm mới của Level tiếp theo được cập nhật tự động bằng JS -->
+            </div>
+            <button id="btn-next-level" onclick="proceedToNextLevel()">TIẾP TỤC</button>
+        </div>
+    </div>
+
+    <!-- Popup giới thiệu trước trận Boss (Sau khi vượt qua Level 4) -->
     <div id="boss-intro-modal" class="hidden">
         <div class="modal-content boss-intro-box">
             <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG THỨC TỈNH ⚡</h1>
-            <p class="boss-intro-sub">Mê cung đã thu hẹp lại thành tử địa giao tranh!</p>
+            <p class="boss-intro-sub">Bạn đã vượt qua cả 4 tầng mê cung! Tử địa giao tranh bắt đầu!</p>
             <div class="boss-rules">
                 <p>🛡️ <b>Đồng minh:</b> 50 người cùng bạn chiến đấu trong không gian nghẹt thở.</p>
                 <p>⚔️ <b>Kỹ năng:</b> Dùng <b>LƯỚT</b>, <b>BÃO NỘ</b> và <b>HỒI MÁU</b> để sinh tồn.</p>
@@ -102,10 +115,10 @@
         <div class="modal-content">
             <h1 id="modal-title">CHIẾN THẮNG TUYỆT ĐỐI!</h1>
             <p id="modal-desc">Bạn và cộng đồng mạng đã đánh bại trường giang!</p>
-            <button id="btn-restart" onclick="restartGame()">Chơi lại</button>
+            <button id="btn-restart" onclick="restartGame()">Chơi lại từ đầu</button>
         </div>
     </div>
 
-    <script src="game.js?v=13"></script>
+    <script src="game.js?v=14"></script>
 </body>
 </html>
