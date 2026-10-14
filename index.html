@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sông Dài Maze - 4 Levels Dark Deception</title>
-    <link rel="stylesheet" href="style.css?v=14">
+    <title>Sông Dài Maze - Dark Deception Edition</title>
+    <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
     <!-- Màn hình cấu hình ban đầu -->
     <div id="start-modal">
         <div class="menu-box">
             <h1>SÔNG DÀI MAZE</h1>
-            <p class="subtitle">Vượt qua 4 Tầng Ác Mộng Mê Cung & Đại Chiến Đấu Trường</p>
+            <p class="subtitle">Trải nghiệm sinh tồn Dark Deception 4 Level & Đại Chiến Boss</p>
 
             <div class="form-group">
                 <label for="player-name-input">Tên người chơi:</label>
@@ -38,7 +38,7 @@
     <div id="ui-container" class="hidden">
         <div id="status-bar">
             <div class="status-top-row">
-                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/10</span>
+                <span class="info-badge" id="badge-target">Bài phốt: <b id="paper-count">0</b>/12</span>
                 <span class="info-badge" id="badge-level">Mê Cung: <b id="level-display" style="color:#38bdf8">Level 1/4</b></span>
                 <span class="info-badge" id="badge-shield">🛡️ Khiên: <b id="shield-count" style="color:#22c55e">0</b>/3</span>
             </div>
@@ -69,15 +69,15 @@
     <!-- Popup giới thiệu trước trận Boss (Sau khi vượt qua Level 4) -->
     <div id="boss-intro-modal" class="hidden">
         <div class="modal-content boss-intro-box">
-            <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG THỨC TỈNH ⚡</h1>
-            <p class="boss-intro-sub">Bạn đã vượt qua cả 4 tầng mê cung! Tử địa giao tranh bắt đầu!</p>
+            <h1 class="boss-intro-title">⚡ ĐẤU TRƯỜNG TỬ THẦN ⚡</h1>
+            <p class="boss-intro-sub">Bạn đã vượt qua cả 4 tầng ác mộng! Boss đã được cường hóa sức mạnh cực đại!</p>
             <div class="boss-rules">
-                <p>🛡️ <b>Đồng minh:</b> 50 người cùng bạn chiến đấu trong không gian nghẹt thở.</p>
-                <p>⚔️ <b>Kỹ năng:</b> Dùng <b>LƯỚT</b>, <b>BÃO NỘ</b> và <b>HỒI MÁU</b> để sinh tồn.</p>
-                <p>👹 <b>Đại chiến Boss:</b></p>
+                <p>🛡️ <b>Đồng minh:</b> 50 người (cùng các phân thân qua cổng) hợp lực chiến đấu.</p>
+                <p>⚔️ <b>Kỹ năng:</b> Dùng <b>LƯỚT</b>, <b>BÃO NỘ</b> và <b>HỒI MÁU (20% HP)</b> để sinh tồn.</p>
+                <p>👹 <b>Đại chiến Boss Siêu Cường Hóa:</b></p>
                 <ul class="skill-list">
-                    <li>🎯 <i>Phase 1:</i> Trường Giang + 50 Fan trung thành.</li>
-                    <li>🔥 <i>Phase 2:</i> Mười Khó thức tỉnh Ki Aura x10 sức mạnh. Nhặt đủ 10 bài phốt đấu trường để đạt 100% cảnh giới và hạ gục Boss!</li>
+                    <li>🎯 <i>Phase 1 (50.000 HP):</i> Trường Giang tốc chiến + 50 Fan cuồng nhiệt.</li>
+                    <li>🔥 <i>Phase 2 (500.000 HP):</i> Mười Khó thức tỉnh Ki Aura, Dịch chuyển chém nổ, Mưa 12 Chưởng Ki và Đại pháo Kamehameha!</li>
                 </ul>
             </div>
             <button id="btn-fight-boss" onclick="startBossBattle()">XÔNG LÊN CHIẾN ĐẤU!</button>
@@ -119,6 +119,6 @@
         </div>
     </div>
 
-    <script src="game.js?v=14"></script>
+    <script src="game.js?v=15"></script>
 </body>
 </html>
