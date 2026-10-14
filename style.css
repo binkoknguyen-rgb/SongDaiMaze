@@ -24,15 +24,15 @@ body, html {
 /* Thanh UI trạng thái trên cùng */
 #ui-container {
     position: absolute;
-    top: max(10px, env(safe-area-inset-top));
+    top: max(8px, env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 24px);
-    max-width: 440px;
-    background: rgba(10, 15, 29, 0.95);
+    max-width: 480px;
+    background: rgba(10, 15, 29, 0.94);
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 12px;
-    padding: 8px 12px;
+    padding: 7px 12px;
     color: #fff;
     pointer-events: none;
     z-index: 30;
@@ -49,20 +49,22 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
 }
 
 .info-badge {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #cbd5e1;
     background: rgba(255, 255, 255, 0.08);
-    padding: 3px 10px;
+    padding: 3px 8px;
     border-radius: 6px;
+    white-space: nowrap;
 }
 
 #paper-count {
     color: #f59e0b;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .status-message {
@@ -78,8 +80,8 @@ body, html {
 /* Joystick Mobile bên trái */
 #joystick-zone {
     position: absolute;
-    bottom: max(25px, env(safe-area-inset-bottom));
-    left: 25px;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    left: max(22px, env(safe-area-inset-left));
     width: 130px;
     height: 130px;
     z-index: 30;
@@ -110,7 +112,7 @@ body, html {
 #maze-skills-zone {
     position: absolute;
     bottom: max(25px, env(safe-area-inset-bottom));
-    right: 25px;
+    right: max(25px, env(safe-area-inset-right));
     z-index: 30;
 }
 
@@ -128,7 +130,7 @@ body, html {
 #skills-zone {
     position: absolute;
     bottom: max(20px, env(safe-area-inset-bottom));
-    right: 20px;
+    right: max(20px, env(safe-area-inset-right));
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -192,7 +194,7 @@ body, html {
 }
 
 /* Modals */
-#start-modal, #boss-intro-modal, #game-modal {
+#start-modal, #level-up-modal, #boss-intro-modal, #game-modal {
     position: absolute;
     top: 0;
     left: 0;
@@ -203,28 +205,30 @@ body, html {
     align-items: center;
     justify-content: center;
     z-index: 60;
-    padding: 20px;
+    padding: 16px;
 }
 
 .menu-box, .modal-content {
     background: rgba(20, 27, 42, 0.96);
     border: 1.5px solid #334155;
     border-radius: 14px;
-    padding: 24px 20px;
+    padding: 22px 18px;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
     text-align: center;
     color: #fff;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 .boss-intro-box {
-    max-width: 440px;
+    max-width: 450px;
     border-color: #f59e0b;
 }
 
 .boss-intro-title {
-    font-size: 22px;
+    font-size: 21px;
     color: #f59e0b;
     margin-bottom: 6px;
 }
@@ -238,7 +242,7 @@ body, html {
 .boss-rules {
     text-align: left;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
     color: #e2e8f0;
     background: rgba(15, 23, 42, 0.85);
     padding: 12px 14px;
@@ -252,16 +256,20 @@ body, html {
     color: #fca5a5;
 }
 
-#btn-fight-boss {
+#btn-fight-boss, #btn-next-level {
     width: 100%;
-    padding: 13px;
-    font-size: 16px;
+    padding: 12px;
+    font-size: 15px;
     font-weight: bold;
     color: #fff;
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    background: linear-gradient(135deg, #22c55e, #15803d);
     border: none;
     border-radius: 8px;
     cursor: pointer;
+}
+
+#btn-fight-boss {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
 }
 
 .menu-box h1 {
@@ -274,12 +282,12 @@ body, html {
 .subtitle {
     font-size: 13px;
     color: #94a3b8;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .form-group {
     text-align: left;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .form-group label {
@@ -323,7 +331,7 @@ body, html {
 #btn-start {
     width: 100%;
     padding: 13px;
-    margin-top: 10px;
+    margin-top: 8px;
     font-size: 15px;
     font-weight: bold;
     color: #fff;
@@ -334,7 +342,7 @@ body, html {
 }
 
 #game-modal button {
-    margin-top: 18px;
+    margin-top: 16px;
     padding: 10px 26px;
     font-size: 15px;
     font-weight: bold;
@@ -347,4 +355,48 @@ body, html {
 
 .hidden {
     display: none !important;
+}
+
+/* TỐI ƯU HÓA KHI CHƠI XOAY NGANG TRÊN MOBILE (LANDSCAPE MODE) */
+@media (orientation: landscape) and (max-height: 550px) {
+    #ui-container {
+        top: 6px;
+        padding: 4px 10px;
+        max-width: 420px;
+    }
+    .info-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+    .status-message {
+        font-size: 11px;
+    }
+    #joystick-zone {
+        width: 105px;
+        height: 105px;
+        bottom: 14px;
+        left: max(18px, env(safe-area-inset-left));
+    }
+    #joystick-stick {
+        width: 42px;
+        height: 42px;
+    }
+    #skills-zone {
+        flex-direction: row;
+        bottom: 14px;
+        right: max(18px, env(safe-area-inset-right));
+        gap: 8px;
+    }
+    .skill-btn {
+        width: 52px;
+        height: 52px;
+    }
+    .clone-btn {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    .menu-box, .modal-content {
+        padding: 14px 16px;
+        max-width: 460px;
+    }
 }
